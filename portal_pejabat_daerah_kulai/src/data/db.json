@@ -1,0 +1,172 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Ahmad bin Ibrahim",
+      "email": "ahmad.ibrahim@example.com",
+      "password": "password123",
+      "phone": "+60-7-1234-5678",
+      "address": "123 Jalan Merdeka, 82000 Kulai",
+      "created_at": "2026-01-15T10:30:00Z",
+      "role": "user"
+    },
+    {
+      "id": 2,
+      "name": "Siti Nurhaliza",
+      "email": "siti.nurhaliza@example.com",
+      "password": "password123",
+      "phone": "+60-7-2234-5678",
+      "address": "456 Jalan Raja, 82000 Kulai",
+      "created_at": "2026-02-10T14:20:00Z",
+      "role": "user"
+    },
+    {
+      "id": 3,
+      "name": "Admin Kulai",
+      "email": "admin@kulai.gov.my",
+      "password": "admin123",
+      "phone": "+60-7-3333-5678",
+      "address": "Pejabat Daerah Kulai, 82000 Kulai",
+      "created_at": "2025-12-01T08:00:00Z",
+      "role": "admin"
+    }
+  ],
+  "complaints": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "title": "Jalan Berlubang di Jalan Merdeka",
+      "description": "Terdapat lubang besar di tengah jalan yang membahayakan kenderaan. Telah terjadi selama 3 bulan tanpa diperbaiki.",
+      "category": "Infrastructure",
+      "location": "Jalan Merdeka, km 2, Kulai",
+      "status": "in_progress",
+      "attachment": "/attachments/road_damage_1.jpg",
+      "created_at": "2026-03-10T09:15:00Z",
+      "updated_at": "2026-03-20T11:30:00Z",
+      "handler": "Encik Razak Ahmad",
+      "conclusion": "Pekerjaan pembaikan jalan sedang dalam proses. Dijangka selesai dalam 2 minggu."
+    },
+    {
+      "id": 2,
+      "user_id": 1,
+      "title": "Lampu Jalan Mati",
+      "description": "Beberapa lampu jalan di kompleks perumahan tidak menyala pada malam hari, menyebabkan keselamatan terancam.",
+      "category": "Public Welfare",
+      "location": "Jalan Raja, Perumahan Damai, Kulai",
+      "status": "resolved",
+      "attachment": "/attachments/streetlight_issue.jpg",
+      "created_at": "2026-02-25T16:45:00Z",
+      "updated_at": "2026-03-15T10:00:00Z",
+      "handler": "Puan Salmiah Mohd",
+      "conclusion": "Lampu jalan telah diperbaiki dan berfungsi dengan baik. Pemeriksaan rutin akan dilakukan setiap bulan."
+    },
+    {
+      "id": 3,
+      "user_id": 2,
+      "title": "Izin Operasi Toko Belum Diproses",
+      "description": "Saya telah mengajukan izin operasi untuk toko makanan kecil saya selama 2 bulan namun belum ada respons dari pejabat.",
+      "category": "License",
+      "location": "Jalan Besar No. 45, Kulai",
+      "status": "pending",
+      "attachment": "/attachments/permit_application.pdf",
+      "created_at": "2026-03-01T13:20:00Z",
+      "updated_at": "2026-03-01T13:20:00Z",
+      "handler": null,
+      "conclusion": "Menunggu pemeriksaan administrasi lebih lanjut."
+    },
+    {
+      "id": 4,
+      "user_id": 2,
+      "title": "Sampah Tidak Diambil",
+      "description": "Sampah di depan rumah tidak diambil selama seminggu, menciptakan bau tidak sedap dan menarik serangga.",
+      "category": "Cleanliness",
+      "location": "Jalan Bunga No. 12, Kulai",
+      "status": "pending",
+      "attachment": null,
+      "created_at": "2026-03-18T08:00:00Z",
+      "updated_at": "2026-03-18T08:00:00Z",
+      "handler": null,
+      "conclusion": "Jadwal pengambilan sampah akan disesuaikan untuk area ini."
+    }
+  ],
+  "faqs": [
+    {
+      "id": 1,
+      "question": "Bagaimana cara mengajukan aduan?",
+      "answer": "Anda dapat mengajukan aduan melalui portal ini dengan mengklik menu 'Aduan' kemudian klik tombol 'Aduan Baru'. Isi semua detail yang diperlukan termasuk lokasi dan lampiran jika ada. Sistem akan memberikan nomor referensi untuk melacak status aduan Anda."
+    },
+    {
+      "id": 2,
+      "question": "Berapa lama waktu untuk memproses aduan?",
+      "answer": "Waktu pemrosesan tergantung jenis aduan. Aduan rutin biasanya diproses dalam 5-7 hari kerja. Aduan mendesak dapat diproses lebih cepat. Anda dapat memantau status aduan Anda secara real-time melalui portal."
+    },
+    {
+      "id": 3,
+      "question": "Apakah saya perlu membuat akun untuk menggunakan portal?",
+      "answer": "Ya, Anda perlu membuat akun terlebih dahulu untuk dapat mengajukan aduan dan menggunakan semua fitur portal. Pendaftaran gratis dan cepat hanya memerlukan email dan kata sandi yang aman."
+    },
+    {
+      "id": 4,
+      "question": "Apa saja kategori aduan yang tersedia?",
+      "answer": "Kategori aduan yang tersedia adalah: Infrastruktur, Kebajikan Awam, Lesen, Kebersihan, dan Komunitas. Pilih kategori yang paling sesuai dengan jenis aduan Anda untuk memastikan penanganan yang tepat."
+    },
+    {
+      "id": 5,
+      "question": "Bagaimana jika saya lupa kata sandi?",
+      "answer": "Klik tautan 'Lupa Kata Sandi?' di halaman masuk. Masukkan email Anda dan kami akan mengirimkan instruksi untuk mengatur ulang kata sandi. Periksa folder spam jika email tidak muncul di inbox."
+    },
+    {
+      "id": 6,
+      "question": "Dapatkah saya melampirkan dokumen dengan aduan?",
+      "answer": "Ya, Anda dapat melampirkan dokumen pendukung seperti foto, PDF, atau dokumen lain untuk memperkuat aduan Anda. Ukuran file maksimal adalah 5MB dan format yang didukung adalah: PDF, JPG, PNG, dan DOCX."
+    },
+    {
+      "id": 7,
+      "question": "Siapa yang dapat mengakses data pribadi saya?",
+      "answer": "Data pribadi Anda hanya dapat diakses oleh petugas Pejabat Daerah Kulai yang berwenang untuk memproses aduan Anda. Data Anda dilindungi dengan enkripsi tingkat enterprise dan tidak akan dibagikan kepada pihak ketiga."
+    },
+    {
+      "id": 8,
+      "question": "Bagaimana hubungi customer support?",
+      "answer": "Anda dapat menghubungi tim support melalui: Email: support@kulai.gov.my | Telepon: +60-7-1234-5678 | Jam Layanan: Senin-Jumat, 08:00-17:00 | Atau gunakan chatbot AI kami yang tersedia 24/7."
+    }
+  ],
+  "chatbot_conversations": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "messages": [
+        {
+          "id": 1,
+          "sender": "bot",
+          "text": "Assalamualaikum! 👋 Bagaimana saya boleh membantu anda hari ini?",
+          "timestamp": "2026-03-20T10:00:00Z"
+        },
+        {
+          "id": 2,
+          "sender": "user",
+          "text": "Saya ingin tahu bagaimana cara mengajukan aduan",
+          "timestamp": "2026-03-20T10:01:00Z"
+        },
+        {
+          "id": 3,
+          "sender": "bot",
+          "text": "Untuk mengajukan aduan, silahkan ikuti langkah-langkah berikut:\n\n1. Masuk ke akun Anda\n2. Klik menu 'Aduan'\n3. Klik tombol 'Aduan Baru'\n4. Isi formulir dengan detail lengkap:\n   - Tajuk aduan\n   - Kategori\n   - Penerangan terperinci\n   - Lokasi kejadian\n   - Lampiran (opsional)\n5. Klik 'Hantar Aduan'\n\nAnda akan menerima nomor rujukan untuk melacak status aduan Anda.",
+          "timestamp": "2026-03-20T10:02:00Z"
+        }
+      ],
+      "created_at": "2026-03-20T10:00:00Z",
+      "updated_at": "2026-03-20T10:02:00Z"
+    }
+  ],
+  "statistics": {
+    "total_complaints": 4,
+    "resolved_complaints": 1,
+    "pending_complaints": 2,
+    "in_progress_complaints": 1,
+    "avg_resolution_time": "4.5 days",
+    "total_users": 2,
+    "total_admin": 1,
+    "satisfaction_rate": 92
+  }
+}
