@@ -75,7 +75,7 @@ main {
 
 /* Accordion */
 .accordion-item {
-  @apply card-hover cursor-pointer;
+  @apply cursor-pointer transition-shadow hover:shadow-md;
 }
 
 .accordion-item.open {

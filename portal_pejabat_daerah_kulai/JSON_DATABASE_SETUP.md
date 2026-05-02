@@ -36,7 +36,7 @@ Complete JSON database with realistic sample data:
 
 ### 2. **src/data/databaseService.js** - Utility Functions
 Ready-to-use helper functions:
-- `authenticateUser(email, password)` - Login verification
+- `authenticateUser(phoneNo, password)` - Login verification
 - `registerUser(userData)` - New account creation
 - `getComplaintsByUserId(userId)` - Retrieve user complaints
 - `submitComplaint(data, userId)` - Submit new complaint
@@ -69,7 +69,7 @@ For development, update your components to use the JSON service:
 import databaseService from '../data/databaseService';
 
 // Example: Login
-const handleLogin = async (email, password) => {
+const handleLogin = async (phoneNo, password) => {
   try {
     const user = await databaseService.authenticateUser(email, password);
     if (user) {
@@ -249,7 +249,7 @@ Edit `src/data/db.json` directly:
 console.log('Database:', db);
 
 // Verify a specific query
-const user = await databaseService.findUserByEmail('test@example.com');
+const user = await databaseService.findUserByphoneNo('01111111111');
 console.log('Found user:', user);
 ```
 

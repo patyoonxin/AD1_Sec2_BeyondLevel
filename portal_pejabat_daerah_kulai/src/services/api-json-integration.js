@@ -13,11 +13,11 @@ import databaseService from '../data/databaseService';
 // Best for: Pure development without backend
 
 export const authAPI_JSON = {
-  login: async (email, password) => {
+  login: async (phoneNo, password) => {
     try {
-      const user = await databaseService.authenticateUser(email, password);
+      const user = await databaseService.authenticateUser(phoneNo, password);
       if (!user) {
-        throw new Error('Invalid email or password');
+        throw new Error('Invalid phone number or password');
       }
       const token = databaseService.generateMockToken();
       return {
@@ -32,11 +32,11 @@ export const authAPI_JSON = {
     }
   },
 
-  register: async (name, email, password) => {
+  register: async (name, phoneNo, password) => {
     try {
       const user = await databaseService.registerUser({
         name,
-        email,
+        phoneNo,
         password
       });
       return {
@@ -131,20 +131,20 @@ export const chatbotAPI_JSON = {
 const USE_JSON_DB = process.env.REACT_APP_USE_JSON_DB === 'true';
 
 export const authAPI_Hybrid = {
-  login: async (email, password) => {
+  login: async (phoneNo, password) => {
     if (USE_JSON_DB) {
-      return authAPI_JSON.login(email, password);
+      return authAPI_JSON.login(phoneNo, password);
     }
     // Real API call
-    // return axios.post('/api/auth/login', { email, password });
+    // return axios.post('/api/auth/login', { phoneNo, password });
   },
 
-  register: async (name, email, password) => {
+  register: async (name, phoneNo, password) => {
     if (USE_JSON_DB) {
-      return authAPI_JSON.register(name, email, password);
+      return authAPI_JSON.register(name, phoneNo, password);
     }
     // Real API call
-    // return axios.post('/api/auth/register', { name, email, password });
+    // return axios.post('/api/auth/register', { name, phoneNo, password });
   }
 };
 
@@ -202,7 +202,7 @@ import { authAPI_JSON as authAPI } from '../services/api-json-integration';
 
 const handleSubmit = async (e) => {
   try {
-    const response = await authAPI.login(email, password);
+    const response = await authAPI.login(phoneNo, password);
     localStorage.setItem('authToken', response.data.token);
     localStorage.setItem('userId', response.data.user.id);
     // ... rest of your code

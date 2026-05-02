@@ -6,9 +6,9 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const databaseService = {
   // USER OPERATIONS
-  async findUserByEmail(email) {
+  async findUserByphoneNo(phoneNo) {
     await delay(200);
-    return db.users.find(user => user.email === email) || null;
+    return db.users.find(user => user.phone_no === phoneNo) || null;
   },
 
   async findUserById(id) {
@@ -16,9 +16,9 @@ export const databaseService = {
     return db.users.find(user => user.id === id) || null;
   },
 
-  async authenticateUser(email, password) {
+  async authenticateUser(phoneNo, password) {
     await delay(300);
-    const user = db.users.find(user => user.email === email && user.password === password);
+    const user = db.users.find(user => user.phone_no === phoneNo && user.password === password);
     if (user) {
       const { password, ...userWithoutPassword } = user;
       return userWithoutPassword;
@@ -28,9 +28,9 @@ export const databaseService = {
 
   async registerUser(userData) {
     await delay(300);
-    const existingUser = db.users.find(user => user.email === userData.email);
+    const existingUser = db.users.find(user => user.phone_no === userData.phone_no);
     if (existingUser) {
-      throw new Error('Email already registered');
+      throw new Error('Phone number already registered');
     }
 
     const newUser = {

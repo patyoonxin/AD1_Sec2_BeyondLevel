@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import logo from '../../image/logo.png';
 
 function Navbar({ user, setUser }) {
   const navigate = useNavigate();
@@ -17,8 +18,8 @@ function Navbar({ user, setUser }) {
       <div className="container-custom flex justify-between items-center py-4">
         {/* Logo */}
         <Link to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-          <span className="text-2xl">🏛️</span>
-          <span className="text-xl font-bold text-gray-900">Portal Rasmi</span>
+          <img src={logo} alt="Portal Rasmi Logo" style={{ height: 32, width: 'auto' }} />
+          <span className="text-xl font-bold text-gray-900">Portal Rasmi Pejabat Daerah Kulai</span>
         </Link>
 
         {/* Desktop Navigation */}

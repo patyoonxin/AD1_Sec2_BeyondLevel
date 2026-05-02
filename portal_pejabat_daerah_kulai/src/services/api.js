@@ -10,11 +10,11 @@ import databaseService from '../data/databaseService';
 // AUTH ENDPOINTS (JSON Database)
 // ============================================
 export const authAPI = {
-  login: async (email, password) => {
+  login: async (phoneNo, password) => {
     try {
-      const user = await databaseService.authenticateUser(email, password);
+      const user = await databaseService.authenticateUser(phoneNo, password);
       if (!user) {
-        throw new Error('Invalid email or password');
+        throw new Error('Invalid phone number or password');
       }
       const token = databaseService.generateMockToken();
       localStorage.setItem('authToken', token);
@@ -31,11 +31,11 @@ export const authAPI = {
     }
   },
 
-  register: async (name, email, password) => {
+  register: async (name, phoneNo, password) => {
     try {
       const user = await databaseService.registerUser({
         name,
-        email,
+        phoneNo,
         password
       });
       return {

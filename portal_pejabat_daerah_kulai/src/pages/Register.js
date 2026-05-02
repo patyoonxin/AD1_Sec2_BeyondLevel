@@ -5,7 +5,7 @@ import { authAPI } from '../services/api';
 function Register() {
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
+    phoneNo: '',
     password: '',
     password_confirmation: '',
   });
@@ -33,7 +33,7 @@ function Register() {
     }
 
     try {
-      await authAPI.register(formData.name, formData.email, formData.password);
+      await authAPI.register(formData.name, formData.phoneNo, formData.password);
       navigate('/login');
     } catch (err) {
       // Handle both axios errors and regular errors from JSON database
@@ -77,16 +77,16 @@ function Register() {
               />
             </div>
 
-            {/* Email */}
+            {/* Phone Number */}
             <div className="form-group">
-              <label className="form-label">Email</label>
+              <label className="form-label">Phone Number</label>
               <input
-                type="email"
-                name="email"
-                value={formData.email}
+                type="text"
+                name="phoneNo"
+                value={formData.phoneNo}
                 onChange={handleChange}
                 className="form-input"
-                placeholder="name@example.com"
+                placeholder="0123456789"
                 required
               />
             </div>

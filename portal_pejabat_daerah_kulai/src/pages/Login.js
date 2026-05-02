@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../services/api';
 
 function Login({ setUser }) {
-  const [email, setEmail]       = useState('');
+  const [phoneNo, setPhoneNo] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError]       = useState('');
   const [loading, setLoading]   = useState(false);
@@ -15,7 +15,7 @@ function Login({ setUser }) {
     setError('');
 
     try {
-      const response = await authAPI.login(email, password);
+      const response = await authAPI.login(phoneNo, password);
       const user = response.data.user;
 
       localStorage.setItem('authToken', response.data.token);
@@ -62,15 +62,15 @@ function Login({ setUser }) {
 
           <form onSubmit={handleSubmit} className="space-y-5">
 
-            {/* Email */}
+            {/* Phone Number */}
             <div className="form-group">
-              <label className="form-label">Your Email</label>
+              <label className="form-label">Your Phone Number</label>
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                value={phoneNo}
+                onChange={(e) => setPhoneNo(e.target.value)}
                 className="form-input"
-                placeholder="name@example.com"
+                placeholder="0123456789"
                 required
               />
             </div>
