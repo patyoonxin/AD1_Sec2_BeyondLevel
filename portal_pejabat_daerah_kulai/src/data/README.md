@@ -1,12 +1,15 @@
 # JSON Temporary Database - Setup Guide
 
 ## Overview
+
 This is a temporary JSON-based database for development and testing without a real backend server. It includes sample data for users, complaints, FAQs, and chatbot conversations.
 
 ## Files
 
 ### `db.json`
+
 Main database file containing:
+
 - **users** - Sample user accounts for testing
 - **complaints** - Sample complaints with all fields including location and attachments
 - **faqs** - Frequently asked questions in Bahasa Melayu
@@ -14,7 +17,9 @@ Main database file containing:
 - **statistics** - Portal statistics
 
 ### `databaseService.js`
+
 Utility service with helper functions to read/manage JSON data:
+
 - User authentication and registration
 - Complaint submission and retrieval
 - FAQ search
@@ -24,14 +29,17 @@ Utility service with helper functions to read/manage JSON data:
 ## Test Credentials
 
 ### Regular User
+
 - **Email:** ahmad.ibrahim@example.com
 - **Password:** password123
 
 ### Another User
+
 - **Email:** siti.nurhaliza@example.com
 - **Password:** password123
 
 ### Admin Account
+
 - **Email:** admin@kulai.gov.my
 - **Password:** admin123
 
@@ -41,24 +49,26 @@ Utility service with helper functions to read/manage JSON data:
 
 ```javascript
 // In your API service file (src/services/api.js)
-import databaseService from '../data/databaseService';
+import databaseService from "../data/databaseService";
 
 export const authAPI = {
-  login: async (email, password) => {
-    const user = await databaseService.authenticateUser(email, password);
+  login: async (phoneNo, password) => {
+    const user = await databaseService.authenticateUser(phoneNo, password);
     if (!user) {
-      throw new Error('Invalid credentials');
+      throw new Error("Invalid credentials");
     }
     const token = databaseService.generateMockToken();
     return { data: { user, token } };
   },
 
-  register: async (name, email, password) => {
+  register: async (name, phoneNo, password) => {
     const user = await databaseService.registerUser({
-      name, email, password
+      name,
+      phoneNo,
+      password,
     });
     return { data: { user } };
-  }
+  },
 };
 
 export const complaintAPI = {
@@ -72,7 +82,7 @@ export const complaintAPI = {
     const userId = 1; // Get from actual user
     const complaints = await databaseService.getComplaintsByUserId(userId);
     return { data: complaints };
-  }
+  },
 };
 ```
 
@@ -82,22 +92,23 @@ Keep using the JSON database for development, then replace API calls with real b
 
 ```javascript
 // Development
-const useJSON = process.env.REACT_APP_USE_JSON_DB === 'true';
+const useJSON = process.env.REACT_APP_USE_JSON_DB === "true";
 
 export const authAPI = {
-  login: async (email, password) => {
+  login: async (phoneNo, password) => {
     if (useJSON) {
-      return databaseService.authenticateUser(email, password);
+      return databaseService.authenticateUser(phoneNo, password);
     }
     // Real API call
-    return axios.post('/api/auth/login', { email, password });
-  }
+    return axios.post("/api/auth/login", { phoneNo, password });
+  },
 };
 ```
 
 ## Sample Data
 
 ### Users
+
 ```json
 {
   "id": 1,
@@ -109,6 +120,7 @@ export const authAPI = {
 ```
 
 ### Complaints
+
 ```json
 {
   "id": 1,
@@ -124,6 +136,7 @@ export const authAPI = {
 ```
 
 ### FAQs
+
 ```json
 {
   "id": 1,

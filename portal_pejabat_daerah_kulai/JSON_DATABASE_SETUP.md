@@ -3,6 +3,7 @@
 ## What Was Created
 
 ### 1. **src/data/db.json** - Main Database File
+
 Complete JSON database with realistic sample data:
 
 ```
@@ -35,7 +36,9 @@ Complete JSON database with realistic sample data:
 ```
 
 ### 2. **src/data/databaseService.js** - Utility Functions
+
 Ready-to-use helper functions:
+
 - `authenticateUser(phoneNo, password)` - Login verification
 - `registerUser(userData)` - New account creation
 - `getComplaintsByUserId(userId)` - Retrieve user complaints
@@ -46,14 +49,18 @@ Ready-to-use helper functions:
 - `getStatistics()` - Portal stats
 
 ### 3. **src/services/api-json-integration.js** - API Integration
+
 Two integration approaches:
+
 - **JSON Only** - Use JSON database directly
 - **Hybrid** - Switch between JSON and real API via environment variable
 
 ### 4. **src/data/README.md** - Documentation
+
 Complete setup guide with credentials and usage examples
 
 ### 5. **.env.example** - Environment Template
+
 Configuration template for your project
 
 ---
@@ -66,19 +73,19 @@ For development, update your components to use the JSON service:
 
 ```javascript
 // In your component file
-import databaseService from '../data/databaseService';
+import databaseService from "../data/databaseService";
 
 // Example: Login
 const handleLogin = async (phoneNo, password) => {
   try {
-    const user = await databaseService.authenticateUser(email, password);
+    const user = await databaseService.authenticateUser(phoneNo, password);
     if (user) {
-      localStorage.setItem('authToken', 'mock_token_' + Date.now());
-      localStorage.setItem('userId', user.id);
+      localStorage.setItem("authToken", "mock_token_" + Date.now());
+      localStorage.setItem("userId", user.id);
       // Proceed with login
     }
   } catch (error) {
-    console.error('Login failed:', error);
+    console.error("Login failed:", error);
   }
 };
 ```
@@ -89,24 +96,26 @@ Or use the ready-made integration file that handles API calls:
 
 ```javascript
 // In src/services/api.js or update your api imports
-import { 
-  authAPI_JSON, 
-  complaintAPI_Enhanced, 
+import {
+  authAPI_JSON,
+  complaintAPI_Enhanced,
   faqAPI_JSON,
-  chatbotAPI_JSON 
-} from '../services/api-json-integration';
+  chatbotAPI_JSON,
+} from "../services/api-json-integration";
 
 // Then use it in your components
-const response = await authAPI_JSON.login(email, password);
+const response = await authAPI_JSON.login(phoneNo, password);
 ```
 
 ### Step 3: Test with Sample Accounts
 
 **Regular User:**
+
 - Email: `ahmad.ibrahim@example.com`
 - Password: `password123`
 
 **Admin:**
+
 - Email: `admin@kulai.gov.my`
 - Password: `admin123`
 
@@ -138,24 +147,30 @@ portal-pejabat-kulai/
 ## Implementation Strategies
 
 ### 🟢 Strategy 1: Direct JSON (Fastest)
+
 Best for rapid prototyping:
+
 ```javascript
-import databaseService from '../data/databaseService';
+import databaseService from "../data/databaseService";
 // Use databaseService directly in components
 ```
 
 ### 🟡 Strategy 2: Hybrid (Flexible)
+
 Best for gradual migration:
+
 ```javascript
 // .env file
-REACT_APP_USE_JSON_DB=true
+REACT_APP_USE_JSON_DB = true;
 
 // When ready to use real API, change to:
-REACT_APP_USE_JSON_DB=false
+REACT_APP_USE_JSON_DB = false;
 ```
 
 ### 🔴 Strategy 3: Mock Server (Realistic)
+
 Best for production-like testing:
+
 ```bash
 # Install globally
 npm install -g json-server
@@ -171,6 +186,7 @@ json-server --watch src/data/db.json --port 3001
 ## Data Structure Examples
 
 ### Complaint Object
+
 ```javascript
 {
   "id": 1,
@@ -187,6 +203,7 @@ json-server --watch src/data/db.json --port 3001
 ```
 
 ### User Object
+
 ```javascript
 {
   "id": 1,
@@ -204,12 +221,14 @@ json-server --watch src/data/db.json --port 3001
 ## Next Steps
 
 ### For Development
+
 1. ✅ Use this JSON database for local testing
 2. ✅ Test all features with sample data
 3. ✅ Verify component logic works correctly
 4. ✅ Add more test data to db.json as needed
 
 ### For Production
+
 1. 🔄 Replace JSON database with real backend API
 2. 🔄 Implement proper authentication server
 3. 🔄 Set up file storage (AWS S3, etc.)
@@ -217,6 +236,7 @@ json-server --watch src/data/db.json --port 3001
 5. 🔄 Remove JSON database code
 
 ### Useful Enhancements
+
 - Add more sample complaints based on real scenarios
 - Create admin dashboard using mock data
 - Test error handling with invalid data
@@ -228,7 +248,9 @@ json-server --watch src/data/db.json --port 3001
 ## Tips & Tricks
 
 ### Add Test Data
+
 Edit `src/data/db.json` directly:
+
 ```json
 {
   "complaints": [
@@ -244,20 +266,23 @@ Edit `src/data/db.json` directly:
 ```
 
 ### Debug Database Calls
+
 ```javascript
 // Check what data is being stored
-console.log('Database:', db);
+console.log("Database:", db);
 
 // Verify a specific query
-const user = await databaseService.findUserByphoneNo('01111111111');
-console.log('Found user:', user);
+const user = await databaseService.findUserByphoneNo("01111111111");
+console.log("Found user:", user);
 ```
 
 ### Simulate Network Delays
+
 The service already includes delays, but you can adjust them:
+
 ```javascript
 // In databaseService.js
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 // Change 200/300/400 values for different delays
 ```
 
@@ -266,19 +291,24 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 ## Troubleshooting
 
 ### Problem: Cannot import db.json
+
 **Solution:** Ensure you're in a Create React App project that supports JSON imports
+
 ```javascript
 // This should work in Create React App
-import db from './db.json';
+import db from "./db.json";
 ```
 
 ### Problem: Data not persisting across page refreshes
+
 **Expected behavior** - JSON is reloaded from file. Use localStorage for persistence:
+
 ```javascript
-localStorage.setItem('userData', JSON.stringify(user));
+localStorage.setItem("userData", JSON.stringify(user));
 ```
 
 ### Problem: File attachment not working
+
 **Workaround:** Currently, only file metadata is stored. For full file uploads, integrate with backend file storage later.
 
 ---
@@ -286,6 +316,7 @@ localStorage.setItem('userData', JSON.stringify(user));
 ## Support
 
 For questions about implementation:
+
 1. Check the [README.md](./README.md) in src/data/
 2. Review examples in [api-json-integration.js](../../services/api-json-integration.js)
 3. Study the [db.json](./db.json) structure

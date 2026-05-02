@@ -8,7 +8,7 @@ export const databaseService = {
   // USER OPERATIONS
   async findUserByphoneNo(phoneNo) {
     await delay(200);
-    return db.users.find(user => user.phone_no === phoneNo) || null;
+    return db.users.find(user => user.phoneNo === phoneNo) || null;
   },
 
   async findUserById(id) {
@@ -18,7 +18,7 @@ export const databaseService = {
 
   async authenticateUser(phoneNo, password) {
     await delay(300);
-    const user = db.users.find(user => user.phone_no === phoneNo && user.password === password);
+    const user = db.users.find(user => user.phoneNo === phoneNo && user.password === password);
     if (user) {
       const { password, ...userWithoutPassword } = user;
       return userWithoutPassword;
@@ -28,7 +28,7 @@ export const databaseService = {
 
   async registerUser(userData) {
     await delay(300);
-    const existingUser = db.users.find(user => user.phone_no === userData.phone_no);
+    const existingUser = db.users.find(user => user.phoneNo === userData.phoneNo);
     if (existingUser) {
       throw new Error('Phone number already registered');
     }
