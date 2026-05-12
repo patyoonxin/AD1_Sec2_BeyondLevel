@@ -41,7 +41,8 @@ function ChatbotPage() {
       const response = await chatbotAPI.sendMessage(inputValue);
       const botMessage = {
         id: messages.length + 2,
-        text: response.data.response,
+        // text: response.data.response,
+        text: response.data.reply,
         sender: 'bot',
         timestamp: new Date(),
       };

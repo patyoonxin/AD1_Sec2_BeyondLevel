@@ -151,17 +151,47 @@ export const complaintAPI = {
 // ============================================
 // CHATBOT ENDPOINTS (JSON Database)
 // ============================================
+// export const chatbotAPI = {
+  // sendMessage: async (message) => {
+  //   try {
+  //     const response = await databaseService.getChatbotResponse(message);
+  //     return {
+  //       data: {
+  //         reply: response,
+  //         timestamp: new Date().toISOString()
+  //       }
+  //     };
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // },
 export const chatbotAPI = {
   sendMessage: async (message) => {
     try {
-      const response = await databaseService.getChatbotResponse(message);
+      console.log("📤 Sending to backend:", message);
+
+      const res = await fetch("http://127.0.0.1:8000/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message })
+      });
+
+      const data = await res.json();
+
+      console.log("📥 Backend response:", data);
+
       return {
         data: {
-          reply: response,
+          reply: data.reply,
+          source: data.source,
           timestamp: new Date().toISOString()
         }
       };
+
     } catch (error) {
+      console.error("❌ Chatbot API error:", error);
       throw error;
     }
   },
