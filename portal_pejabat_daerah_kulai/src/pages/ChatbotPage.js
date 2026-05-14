@@ -82,7 +82,7 @@ function ChatbotPage() {
                   : 'message-bot-bubble'
               }`}
             >
-              <p>{message.text}</p>
+              {message.text}
               <span className="message-time">
                 {message.timestamp.toLocaleTimeString('id-ID', {
                   hour: '2-digit',

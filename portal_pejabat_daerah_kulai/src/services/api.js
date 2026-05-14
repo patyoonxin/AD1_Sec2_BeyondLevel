@@ -254,3 +254,83 @@ export const analyticsAPI = {
     return { data: { message: 'Report generated' } };
   }
 };
+
+// ============================================
+// REAL AGENT CHAT ENDPOINTS (JSON Database)
+// ============================================
+export const chatAPI = {
+  // create or get conversation
+  createConversation: async (userId) => {
+    const res = await fetch("http://127.0.0.1:8000/api/conversations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ user_id: userId }),
+    });
+
+    return res.json();
+  },
+
+  // send message
+  sendMessage: async (conversationId, senderId, message) => {
+    const res = await fetch("http://127.0.0.1:8000/api/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        conversation_id: conversationId,
+        sender_id: senderId,
+        message: message,
+      }),
+    });
+
+    return res.json();
+  },
+
+  // get messages
+  getMessages: async (conversationId) => {
+    const res = await fetch(
+      `http://127.0.0.1:8000/api/messages/${conversationId}`
+    );
+
+    return res.json();
+  },
+};
+
+// ============================================
+// ADMIN REAL AGENT CHAT ENDPOINTS (JSON Database)
+// ============================================
+export const adminChatAPI = {
+  // get all conversations
+  getConversations: async () => {
+    const res = await fetch("http://127.0.0.1:8000/api/conversations");
+    return res.json();
+  },
+
+  // get messages
+  getMessages: async (conversationId) => {
+    const res = await fetch(
+      `http://127.0.0.1:8000/api/messages/${conversationId}`
+    );
+    return res.json();
+  },
+
+  // send message
+  sendMessage: async (conversationId, senderId, message) => {
+    const res = await fetch("http://127.0.0.1:8000/api/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        conversation_id: conversationId,
+        sender_id: senderId,
+        message,
+      }),
+    });
+
+    return res.json();
+  },
+};

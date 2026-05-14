@@ -44,12 +44,7 @@ function Navbar({ user, setUser }) {
               >
                 ❓ Soalan Lazim
               </Link>
-              <Link
-                to="/dashboard"
-                className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
-              >
-                📊 Dashboard
-              </Link>
+              
               <button
                 onClick={handleLogout}
                 className="btn btn-danger btn-sm ml-2"
