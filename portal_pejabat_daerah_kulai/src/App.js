@@ -9,6 +9,7 @@ import Register from './pages/Register';
 import ChatbotPage from './pages/ChatbotPage';
 import ComplaintsPage from './pages/ComplaintsPage';
 import FAQPage from './pages/FAQPage';
+import RealAgent from './pages/RealAgent';
 
 // Existing components
 import Navbar from './components/Common/Navbar';
@@ -21,6 +22,7 @@ import AdminChatbot from './pages/Admin/AdminChatbot';
 import AdminUsers from './pages/Admin/AdminUsers';
 import AdminFAQ from './pages/Admin/AdminFAQ';
 import AdminAnalytics from './pages/Admin/AdminAnalytics';
+import AdminRealAgent from './pages/Admin/AdminRealAgent';
 
 // ── Guard: only admin role can access /admin/* ────────────────────────────────
 function AdminRoute({ component: Component }) {
@@ -130,6 +132,15 @@ function App() {
           }
         />
         <Route
+          path="/real-agent"
+          element={
+            <>
+              <Navbar user={user} setUser={handleSetUser} />
+              <RealAgent />
+            </>
+          }
+        />
+        <Route
           path="/complaints"
           element={
             <>
@@ -156,7 +167,7 @@ function App() {
         <Route path="/admin/users"      element={<AdminRoute component={AdminUsers} />} />
         <Route path="/admin/faq"        element={<AdminRoute component={AdminFAQ} />} />
         <Route path="/admin/analytics"  element={<AdminRoute component={AdminAnalytics} />} />
-
+        <Route path="/admin/real-agent" element={<AdminRoute component={AdminRealAgent} />} />
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

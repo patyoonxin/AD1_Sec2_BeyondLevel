@@ -41,7 +41,8 @@ function ChatbotPage() {
       const response = await chatbotAPI.sendMessage(inputValue);
       const botMessage = {
         id: messages.length + 2,
-        text: response.data.response,
+        // text: response.data.response,
+        text: response.data.reply,
         sender: 'bot',
         timestamp: new Date(),
       };
@@ -81,7 +82,7 @@ function ChatbotPage() {
                   : 'message-bot-bubble'
               }`}
             >
-              <p>{message.text}</p>
+              {message.text}
               <span className="message-time">
                 {message.timestamp.toLocaleTimeString('id-ID', {
                   hour: '2-digit',
