@@ -11,7 +11,7 @@ const NAV_ITEMS = [
   {
     label: 'Modules',
     items: [
-      { path: '/admin/complaints',  label: 'Complaint Management',  icon: 'complaint',  badge: 5 },
+      { path: '/admin/complaints',  label: 'Complaint Management',  icon: 'complaint'},
       { path: '/admin/chatbot',     label: 'AI Chatbot',            icon: 'chatbot' },
       { path: '/admin/real-agent',  label: 'Real Agent',            icon: 'real-agent' },
       { path: '/admin/users',       label: 'User Management',       icon: 'users' },

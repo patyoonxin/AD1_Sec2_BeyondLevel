@@ -169,6 +169,60 @@ export const complaintAPI = {
   },
 
   /**
+   * Search the current user's complaints with filters.
+   * Accepts an object with { q, status, category }.
+   * Status filter uses UI keys ('pending', 'in_progress', etc.) and is
+   * automatically mapped to the backend's capitalized enum.
+   */
+  searchMyComplaints: async (filters = {}) => {
+    const userId = localStorage.getItem('userId') || 1;
+    const statusMap = {
+      pending: 'Pending',
+      in_progress: 'In Progress',
+      resolved: 'Resolved',
+      rejected: 'Rejected',
+    };
+
+    const params = new URLSearchParams({ user_id: userId });
+    if (filters.q) params.append('q', filters.q);
+    if (filters.status) params.append('status', statusMap[filters.status] || filters.status);
+    if (filters.category) params.append('category', filters.category);
+
+    const res = await fetch(`${API_BASE_URL}/complaints/search?${params.toString()}`, {
+      headers: { Accept: 'application/json' },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message || 'Search failed');
+    return { data: (data || []).map(normalizeComplaint) };
+  },
+
+  /**
+   * Admin: search across all complaints in the system.
+   * Accepts { q, status, category, user_name }.
+   */
+  searchAllComplaints: async (filters = {}) => {
+    const statusMap = {
+      pending: 'Pending',
+      in_progress: 'In Progress',
+      resolved: 'Resolved',
+      rejected: 'Rejected',
+    };
+
+    const params = new URLSearchParams();
+    if (filters.q) params.append('q', filters.q);
+    if (filters.status) params.append('status', statusMap[filters.status] || filters.status);
+    if (filters.category) params.append('category', filters.category);
+    if (filters.user_name) params.append('user_name', filters.user_name);
+
+    const res = await fetch(`${API_BASE_URL}/admin/complaints/search?${params.toString()}`, {
+      headers: { Accept: 'application/json' },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message || 'Search failed');
+    return { data: (data || []).map(normalizeComplaint) };
+  },
+
+  /**
    * Admin: fetch every complaint in the system.
    */
   getAllComplaints: async () => {

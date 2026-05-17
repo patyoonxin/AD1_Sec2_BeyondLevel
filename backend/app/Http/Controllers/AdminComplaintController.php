@@ -21,7 +21,7 @@ class AdminComplaintController extends Controller
     {
         $complaints = Complaint::with('user')
             ->orderBy('created_at', 'desc')
-            ->paginate(15);
+            ->get();
 
         return response()->json($complaints);
     }
@@ -86,7 +86,7 @@ class AdminComplaintController extends Controller
             });
         }
 
-        $complaints = $query->orderBy('created_at', 'desc')->paginate(15);
+        $complaints = $query->orderBy('created_at', 'desc')->get();
 
         return response()->json($complaints);
     }

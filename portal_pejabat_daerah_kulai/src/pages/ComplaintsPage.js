@@ -16,6 +16,10 @@ function ComplaintsPage() {
   });
   const [loading, setLoading] = useState(false);
 
+  // Search & filter state for the complaint tracking module
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+
   useEffect(() => {
     fetchComplaints();
   }, []);
@@ -28,6 +32,26 @@ function ComplaintsPage() {
       console.error('Error fetching complaints:', error);
     }
   };
+
+  /*
+   * Client-side filtering across the already-loaded complaints.
+   * Matches the search term against title, description, category,
+   * location, and record_id. Also applies the active status filter.
+   */
+  const filteredComplaints = complaints.filter((c) => {
+    const term = searchTerm.toLowerCase();
+    const matchesSearch = !term || [
+      c.title,
+      c.description,
+      c.category,
+      c.ai_category,
+      c.location,
+      c.record_id,
+    ].some((field) => (field || '').toLowerCase().includes(term));
+
+    const matchesStatus = statusFilter === 'all' || c.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,7 +72,7 @@ function ComplaintsPage() {
       const response = await complaintAPI.submitComplaint(submitData);
       
       // Show success message
-      setSuccessMessage(`✅ Complaint submitted successfully! Reference #${response.data.id}`);
+      setSuccessMessage(`Complaint submitted successfully! Reference #${response.data.id}`);
       
       // Reset form
       setFormData({ title: '', category: 'Infrastruktur', description: '', location: '', attachment: null });
@@ -61,7 +85,7 @@ function ComplaintsPage() {
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
       const errorMsg = error.message || 'Error submitting complaint. Please try again.';
-      setErrorMessage(`❌ ${errorMsg}`);
+      setErrorMessage(`${errorMsg}`);
       console.error('Error submitting complaint:', error);
     } finally {
       setLoading(false);
@@ -70,9 +94,10 @@ function ComplaintsPage() {
 
   const getStatusBadge = (status) => {
     const statusMap = {
-      pending: { badge: 'badge-warning', label: '⏳ Pending' },
-      in_progress: { badge: 'badge-primary', label: '⚙️ In Progress' },
-      resolved: { badge: 'badge-success', label: '✅ Resolved' },
+      pending: { badge: 'badge-warning', label: 'Pending' },
+      in_progress: { badge: 'badge-primary', label: 'In Progress' },
+      resolved: { badge: 'badge-success', label: 'Resolved' },
+      rejected: { badge: 'badge-danger', label: 'Rejected' },
     };
     return statusMap[status] || { badge: 'badge-gray', label: status };
   };
@@ -193,7 +218,7 @@ function ComplaintsPage() {
                   {/* Conclusion/Comment - Under Timeline */}
                   {selectedComplaint.conclusion && (
                     <div className="mt-4 bg-green-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-2 font-semibold">💬 Conclusion</p>
+                      <p className="text-sm text-gray-600 mb-2 font-semibold">Response</p>
                       <p className="text-gray-900">{selectedComplaint.conclusion}</p>
                     </div>
                   )}
@@ -213,14 +238,14 @@ function ComplaintsPage() {
 
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">📝 Manage Complaints</h1>
-            <p className="text-gray-600 mt-2">Submit, monitor, and manage all your complaints here</p>
+            <h1 className="text-3xl font-bold text-gray-900">Manage Complaints</h1>
+            <p className="text-gray-600 mt-2">Submit, monitor and manage all your complaints here</p>
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
             className="btn btn-primary"
           >
-            {showForm ? '✕ Cancel' : '➕ New Complaint'}
+            {showForm ? '✕ Cancel' : 'New Complaint'}
           </button>
         </div>
 
@@ -273,7 +298,7 @@ function ComplaintsPage() {
 
               {/* Location */}
               <div className="form-group">
-                <label className="form-label">📍 Location</label>
+                <label className="form-label">Location</label>
                 <input
                   type="text"
                   value={formData.location}
@@ -286,7 +311,7 @@ function ComplaintsPage() {
 
               {/* Attachment */}
               <div className="form-group">
-                <label className="form-label">📎 Attachment (Optional)</label>
+                <label className="form-label">Attachment (Optional)</label>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors cursor-pointer">
                   <input
                     type="file"
@@ -312,7 +337,7 @@ function ComplaintsPage() {
                 disabled={loading}
                 className="btn btn-success btn-lg"
               >
-                {loading ? '⏳ Sending...' : '📤 Submit Complaint'}
+                {loading ? '⏳ Sending...' : 'Submit Complaint'}
               </button>
             </form>
           </div>
@@ -320,9 +345,35 @@ function ComplaintsPage() {
 
         {/* Complaints List */}
         <div className="card">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            {complaints.length === 0 ? 'No complaints yet' : `Your ${complaints.length} Complaint${complaints.length !== 1 ? 's' : ''}`}
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            {complaints.length === 0
+              ? 'No complaints yet'
+              : `Your ${complaints.length} Complaint${complaints.length !== 1 ? 's' : ''}`}
           </h2>
+
+          {/* Search & Filter Controls */}
+          {complaints.length > 0 && (
+            <div className="flex flex-col sm:flex-row gap-3 mb-5">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search by title, description, category, location, or reference ID..."
+                className="form-input flex-1"
+              />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="form-select sm:w-48"
+              >
+                <option value="all">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="in_progress">In Progress</option>
+                <option value="resolved">Resolved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+          )}
 
           {complaints.length === 0 ? (
             <div className="empty-state">
@@ -330,9 +381,14 @@ function ComplaintsPage() {
               <p className="empty-state-text">You don't have any complaints yet</p>
               <p className="text-gray-500 text-sm mt-2">Submit a complaint now to get help</p>
             </div>
+          ) : filteredComplaints.length === 0 ? (
+            <div className="empty-state">
+              <p className="empty-state-text">No complaints match your search</p>
+              <p className="text-gray-500 text-sm mt-2">Try a different keyword or status filter</p>
+            </div>
           ) : (
             <div className="space-y-3">
-              {complaints.map((complaint) => (
+              {filteredComplaints.map((complaint) => (
                 <div 
                   key={complaint.id} 
                   className="card-hover border border-gray-200 cursor-pointer hover:shadow-md transition-shadow"
