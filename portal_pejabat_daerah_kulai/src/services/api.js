@@ -76,76 +76,155 @@ export const authAPI = {
 };
 
 // ============================================
-// COMPLAINT ENDPOINTS (JSON Database)
+// COMPLAINT ENDPOINTS (Laravel Backend API)
 // ============================================
+// Base URL for the Laravel API server
+const API_BASE_URL = 'http://127.0.0.1:8000/api';
+
+/**
+ * Normalize a complaint row from the backend into the shape the UI expects.
+ * Backend status values are capitalized ('Pending', 'In Progress', 'Resolved',
+ * 'Rejected'); the UI uses lowercase keys ('pending', 'in_progress', 'resolved').
+ */
+const normalizeComplaint = (c) => {
+  const statusMap = {
+    'Pending': 'pending',
+    'In Progress': 'in_progress',
+    'Resolved': 'resolved',
+    'Rejected': 'rejected',
+  };
+
+  // attachments column is JSON array of URLs; expose the first one as `attachment`
+  const attachments = Array.isArray(c.attachments) ? c.attachments : [];
+  const firstAttachment = attachments[0] || null;
+  const attachmentUrl = firstAttachment
+    ? (firstAttachment.startsWith('http') ? firstAttachment : `http://127.0.0.1:8000${firstAttachment}`)
+    : null;
+
+  return {
+    ...c,
+    status: statusMap[c.status] || c.status,
+    attachment: attachmentUrl,
+    handler: c.handler || null,
+    conclusion: c.admin_response || null,
+  };
+};
+
 export const complaintAPI = {
+  /**
+   * Submit a new complaint to the Laravel backend.
+   * Sends multipart/form-data so the file attachment is uploaded.
+   */
   submitComplaint: async (formData) => {
-    try {
-      const userId = localStorage.getItem('userId') || 1;
-      
-      // Extract files from FormData if present
-      let attachmentPath = null;
-      if (formData instanceof FormData && formData.get('attachment')) {
-        const file = formData.get('attachment');
-        attachmentPath = `/attachments/${file.name}`;
-      }
+    const userId = localStorage.getItem('userId') || 1;
 
-      const complaintData = {
-        title: formData instanceof FormData ? formData.get('title') : formData.title,
-        description: formData instanceof FormData ? formData.get('description') : formData.description,
-        category: formData instanceof FormData ? formData.get('category') : formData.category,
-        location: formData instanceof FormData ? formData.get('location') : formData.location,
-        attachment: attachmentPath
-      };
-
-      const complaint = await databaseService.submitComplaint(complaintData, userId);
-      return { data: complaint };
-    } catch (error) {
-      throw error;
+    // Ensure user_id is appended to the FormData
+    const payload = formData instanceof FormData ? formData : new FormData();
+    if (!(formData instanceof FormData)) {
+      Object.entries(formData || {}).forEach(([k, v]) => {
+        if (v !== null && v !== undefined) payload.append(k, v);
+      });
     }
+    payload.append('user_id', userId);
+
+    const res = await fetch(`${API_BASE_URL}/complaints`, {
+      method: 'POST',
+      body: payload, // do NOT set Content-Type; browser sets multipart boundary
+      headers: { Accept: 'application/json' },
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      const msg = data?.message || 'Failed to submit complaint';
+      throw new Error(msg);
+    }
+
+    return { data: normalizeComplaint(data.complaint || data) };
   },
 
+  /**
+   * Fetch the current user's complaints from the database.
+   */
   getMyComplaints: async () => {
-    try {
-      const userId = localStorage.getItem('userId') || 1;
-      const complaints = await databaseService.getComplaintsByUserId(parseInt(userId));
-      return { data: complaints };
-    } catch (error) {
-      throw error;
-    }
+    const userId = localStorage.getItem('userId') || 1;
+    const res = await fetch(`${API_BASE_URL}/complaints?user_id=${userId}`, {
+      headers: { Accept: 'application/json' },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message || 'Failed to load complaints');
+    return { data: (data || []).map(normalizeComplaint) };
   },
 
+  /**
+   * Fetch a specific complaint by ID.
+   */
   getComplaintStatus: async (complaintId) => {
-    try {
-      const complaint = await databaseService.getComplaintById(complaintId);
-      return { data: complaint };
-    } catch (error) {
-      throw error;
-    }
+    const userId = localStorage.getItem('userId') || 1;
+    const res = await fetch(`${API_BASE_URL}/complaints/${complaintId}?user_id=${userId}`, {
+      headers: { Accept: 'application/json' },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message || 'Failed to load complaint');
+    return { data: normalizeComplaint(data) };
   },
 
+  /**
+   * Admin: fetch every complaint in the system.
+   */
   getAllComplaints: async () => {
-    try {
-      const complaints = await databaseService.getAllComplaints();
-      return { data: complaints };
-    } catch (error) {
-      throw error;
-    }
+    const res = await fetch(`${API_BASE_URL}/admin/complaints`, {
+      headers: { Accept: 'application/json' },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message || 'Failed to load complaints');
+    // Backend admin index returns a paginator
+    const rows = Array.isArray(data) ? data : (data.data || []);
+    return { data: rows.map(normalizeComplaint) };
   },
 
+  /**
+   * Admin: submit a response to a specific complaint.
+   */
   respondToComplaint: async (complaintId, response) => {
-    // For JSON DB, just acknowledge
-    return { data: { message: 'Response submitted' } };
+    const res = await fetch(`${API_BASE_URL}/admin/complaints/${complaintId}/respond`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({ admin_response: response }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message || 'Failed to submit response');
+    return { data };
   },
 
+  /**
+   * Admin: update the status of a complaint.
+   * Accepts UI status keys ('pending', 'in_progress', 'resolved', 'rejected')
+   * and maps them to the backend's enum values.
+   */
   updateComplaintStatus: async (complaintId, status) => {
-    try {
-      const complaint = await databaseService.updateComplaintStatus(complaintId, status);
-      return { data: complaint };
-    } catch (error) {
-      throw error;
-    }
-  }
+    const statusMap = {
+      pending: 'Pending',
+      in_progress: 'In Progress',
+      resolved: 'Resolved',
+      rejected: 'Rejected',
+    };
+    const mapped = statusMap[status] || status;
+
+    const res = await fetch(`${API_BASE_URL}/admin/complaints/${complaintId}/status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({ status: mapped }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message || 'Failed to update status');
+    return { data: normalizeComplaint(data.complaint || data) };
+  },
 };
 
 // ============================================
