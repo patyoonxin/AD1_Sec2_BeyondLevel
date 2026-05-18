@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { LanguageSwitcher } from '../../lang/i18n';
 
 const NAV_ITEMS = [
   {
@@ -11,7 +12,8 @@ const NAV_ITEMS = [
   {
     label: 'Modules',
     items: [
-      { path: '/admin/complaints',  label: 'Complaint Management',  icon: 'complaint',  badge: 5 },
+      { path: '/admin/complaints',  label: 'Complaint Management',  icon: 'complaint'},
+      { path: '/admin/categories',  label: 'Manage Categories',     icon: 'categories' },
       { path: '/admin/chatbot',     label: 'AI Chatbot',            icon: 'chatbot' },
       { path: '/admin/real-agent',  label: 'Real Agent',            icon: 'real-agent' },
       { path: '/admin/users',       label: 'User Management',       icon: 'users' },
@@ -63,14 +65,20 @@ function NavIcon({ name }) {
         <path d="M2 12L6 8l3 3 5-6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
+    categories: (
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+        <rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
+        <rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
+        <rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
+        <rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
+      </svg>
+    ),
   };
   return icons[name] || null;
 }
 
 function AdminLayout({ children }) {
   const location = useLocation();
-  const [mobileOpen, setMobileOpen] = useState(false);
-
   const isActive = (path) => location.pathname === path;
 
   return (
@@ -207,6 +215,7 @@ function AdminLayout({ children }) {
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <LanguageSwitcher />
             {/* Bell */}
             <div style={{
               width: 32, height: 32, borderRadius: 8,
