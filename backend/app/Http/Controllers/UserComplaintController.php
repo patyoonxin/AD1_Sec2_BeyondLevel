@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Complaint;
-use App\Services\GeminiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -61,20 +60,6 @@ class UserComplaintController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | AI Category Forecasting via Gemini API
-        |--------------------------------------------------------------------------
-        | Automatically predicts the complaint category based on the description.
-        | Wrapped in try/catch so a Gemini failure never blocks complaint submission.
-        */
-        try {
-            $geminiService = new GeminiService();
-            $aiCategory = $geminiService->categorizeComplaint($validated['description']);
-        } catch (\Throwable $e) {
-            $aiCategory = $validated['category'] ?? 'Others';
-        }
-
-        /*
-        |--------------------------------------------------------------------------
         | Handle Attachments
         |--------------------------------------------------------------------------
         | Each uploaded file is stored in the 'public/complaints' disk directory.
@@ -101,6 +86,7 @@ class UserComplaintController extends Controller
         | Persist Complaint
         |--------------------------------------------------------------------------
         | Associates the complaint with the currently authenticated user.
+        | The category is the user-selected value from the dynamic categories.
         */
         $complaint = Complaint::create([
             'record_id'    => $recordId,
@@ -110,7 +96,6 @@ class UserComplaintController extends Controller
             'description'  => $validated['description'],
             'location'     => $validated['location'],
             'attachments'  => $attachmentUrls,
-            'ai_category'  => $aiCategory,
             'status'       => 'Pending',
         ]);
 
@@ -141,7 +126,8 @@ class UserComplaintController extends Controller
             return response()->json(['message' => 'user_id is required.'], 422);
         }
 
-        $complaints = Complaint::where('user_id', $userId)
+        $complaints = Complaint::with(['responses.admin'])
+            ->where('user_id', $userId)
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -160,7 +146,7 @@ class UserComplaintController extends Controller
      */
     public function show(Request $request, int $id): JsonResponse
     {
-        $query = Complaint::with('user')->where('id', $id);
+        $query = Complaint::with(['user', 'responses.admin'])->where('id', $id);
 
         // Optional ownership check when user_id is supplied
         if ($userId = $request->query('user_id') ?? optional($request->user())->id) {
@@ -197,7 +183,7 @@ class UserComplaintController extends Controller
         |--------------------------------------------------------------------------
         | q       : general search across record_id, description, and location.
         | status  : exact match on complaint status.
-        | category: exact match on AI-predicted category.
+        | category: exact match on complaint category.
         */
         if ($request->filled('q')) {
             $searchTerm = $request->input('q');

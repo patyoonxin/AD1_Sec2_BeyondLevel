@@ -1,21 +1,22 @@
-    <?php
+<?php
 
-    use Illuminate\Http\Request;
-    use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
-    use App\Http\Controllers\FaqController;
-    use App\Http\Controllers\ChatbotController;
-    use App\Http\Controllers\ChatConversationController;
-    use App\Http\Controllers\ChatMessageController;
-    use App\Http\Controllers\UserComplaintController;
-    use App\Http\Controllers\AdminComplaintController;
+use App\Http\Controllers\FaqController;
+use App\Http\Controllers\ChatbotController;
+use App\Http\Controllers\ChatConversationController;
+use App\Http\Controllers\ChatMessageController;
+use App\Http\Controllers\UserComplaintController;
+use App\Http\Controllers\AdminComplaintController;
+use App\Http\Controllers\ComplaintCategoryController;
 
-    //Faq routes
-    Route::get('/faq', [FaqController::class, 'index']);
-    Route::get('/faq/{id}', [FaqController::class, 'show']);
-    Route::post('/faq', [FaqController::class, 'store']);
-    Route::put('/faq/{id}', [FaqController::class, 'update']);
-    Route::delete('/faq/{id}', [FaqController::class, 'destroy']);
+//Faq routes
+Route::get('/faq', [FaqController::class, 'index']);
+Route::get('/faq/{id}', [FaqController::class, 'show']);
+Route::post('/faq', [FaqController::class, 'store']);
+Route::put('/faq/{id}', [FaqController::class, 'update']);
+Route::delete('/faq/{id}', [FaqController::class, 'destroy']);
 
     //Chatbot route
     Route::post('/chat', [ChatbotController::class, 'chat']);
@@ -86,4 +87,21 @@
 
         // Update the status of a complaint
         Route::patch('/{id}/status', [AdminComplaintController::class, 'updateStatus']);
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Complaint Category Routes
+    |--------------------------------------------------------------------------
+    | Public endpoint to fetch active categories for the user form.
+    | Admin endpoints for full CRUD management of dynamic categories.
+    */
+    Route::get('/complaint-categories/active', [ComplaintCategoryController::class, 'active']);
+
+    Route::prefix('admin/complaint-categories')->group(function () {
+        Route::get('/', [ComplaintCategoryController::class, 'index']);
+        Route::post('/', [ComplaintCategoryController::class, 'store']);
+        Route::get('/{id}', [ComplaintCategoryController::class, 'show']);
+        Route::put('/{id}', [ComplaintCategoryController::class, 'update']);
+        Route::delete('/{id}', [ComplaintCategoryController::class, 'destroy']);
     });

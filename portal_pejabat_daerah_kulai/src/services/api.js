@@ -101,12 +101,19 @@ const normalizeComplaint = (c) => {
     ? (firstAttachment.startsWith('http') ? firstAttachment : `http://127.0.0.1:8000${firstAttachment}`)
     : null;
 
+  // The backend returns `responses` as an array of { id, admin_id, message, created_at, admin: { name, ... } }
+  // Pass it through so UI components can render the full thread.
+  const responses = Array.isArray(c.responses) ? c.responses : [];
+  // Build a single concatenated string for the legacy `conclusion` field used by the user modal.
+  const latestResponse = responses.length > 0 ? responses[responses.length - 1].message : (c.admin_response || null);
+
   return {
     ...c,
     status: statusMap[c.status] || c.status,
     attachment: attachmentUrl,
     handler: c.handler || null,
-    conclusion: c.admin_response || null,
+    conclusion: latestResponse,
+    responses,
   };
 };
 
@@ -198,7 +205,7 @@ export const complaintAPI = {
 
   /**
    * Admin: search across all complaints in the system.
-   * Accepts { q, status, category, user_name }.
+   * Accepts { q, status, category, user_name, page }.
    */
   searchAllComplaints: async (filters = {}) => {
     const statusMap = {
@@ -213,44 +220,85 @@ export const complaintAPI = {
     if (filters.status) params.append('status', statusMap[filters.status] || filters.status);
     if (filters.category) params.append('category', filters.category);
     if (filters.user_name) params.append('user_name', filters.user_name);
+    params.append('page', filters.page || 1);
 
     const res = await fetch(`${API_BASE_URL}/admin/complaints/search?${params.toString()}`, {
       headers: { Accept: 'application/json' },
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data?.message || 'Search failed');
-    return { data: (data || []).map(normalizeComplaint) };
+    const rows = Array.isArray(data) ? data : (data.data || []);
+    return {
+      data: rows.map(normalizeComplaint),
+      meta: {
+        current_page: data.current_page || 1,
+        last_page: data.last_page || 1,
+        total: data.total || rows.length,
+        per_page: data.per_page || 10,
+      },
+    };
   },
 
   /**
    * Admin: fetch every complaint in the system.
+   * Supports pagination via the page parameter.
    */
-  getAllComplaints: async () => {
-    const res = await fetch(`${API_BASE_URL}/admin/complaints`, {
+  getAllComplaints: async (page = 1, filters = {}) => {
+    const params = new URLSearchParams({ page });
+    if (filters.startDate) params.append('start_date', filters.startDate);
+    if (filters.endDate)   params.append('end_date',   filters.endDate);
+    const res = await fetch(`${API_BASE_URL}/admin/complaints?${params.toString()}`, {
       headers: { Accept: 'application/json' },
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data?.message || 'Failed to load complaints');
     // Backend admin index returns a paginator
     const rows = Array.isArray(data) ? data : (data.data || []);
-    return { data: rows.map(normalizeComplaint) };
+    return {
+      data: rows.map(normalizeComplaint),
+      meta: {
+        current_page: data.current_page || 1,
+        last_page: data.last_page || 1,
+        total: data.total || rows.length,
+        per_page: data.per_page || 10,
+      },
+    };
   },
 
   /**
    * Admin: submit a response to a specific complaint.
    */
   respondToComplaint: async (complaintId, response) => {
+    /*
+     * The backend records who authored each response.
+     * We use the currently logged-in admin (stored in localStorage by the
+     * existing auth flow) as the `admin_id`.
+     */
+    const adminId = localStorage.getItem('userId') || 1;
+
     const res = await fetch(`${API_BASE_URL}/admin/complaints/${complaintId}/respond`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
-      body: JSON.stringify({ admin_response: response }),
+      body: JSON.stringify({ admin_response: response, admin_id: adminId }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data?.message || 'Failed to submit response');
-    return { data };
+    return { data: data.complaint ? normalizeComplaint(data.complaint) : data };
+  },
+
+  /**
+   * Fetch a single complaint (admin view) including the full response thread.
+   */
+  getComplaintByIdAdmin: async (complaintId) => {
+    const res = await fetch(`${API_BASE_URL}/admin/complaints/${complaintId}`, {
+      headers: { Accept: 'application/json' },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message || 'Failed to load complaint');
+    return { data: normalizeComplaint(data) };
   },
 
   /**
@@ -372,8 +420,66 @@ export const faqAPI = {
 };
 
 // ============================================
-// ANALYTICS ENDPOINTS (JSON Database)
+// COMPLAINT CATEGORY ENDPOINTS (Laravel Backend)
 // ============================================
+export const categoryAPI = {
+  getAllCategories: async () => {
+    const res = await fetch(`${API_BASE_URL}/admin/complaint-categories`, {
+      headers: { Accept: 'application/json' },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message || 'Failed to load categories');
+    return { data };
+  },
+
+  getActiveCategories: async () => {
+    const res = await fetch(`${API_BASE_URL}/complaint-categories/active`, {
+      headers: { Accept: 'application/json' },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message || 'Failed to load categories');
+    return { data };
+  },
+
+  createCategory: async (categoryData) => {
+    const res = await fetch(`${API_BASE_URL}/admin/complaint-categories`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(categoryData),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message || 'Failed to create category');
+    return { data };
+  },
+
+  updateCategory: async (id, categoryData) => {
+    const res = await fetch(`${API_BASE_URL}/admin/complaint-categories/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(categoryData),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message || 'Failed to update category');
+    return { data };
+  },
+
+  deleteCategory: async (id) => {
+    const res = await fetch(`${API_BASE_URL}/admin/complaint-categories/${id}`, {
+      method: 'DELETE',
+      headers: { Accept: 'application/json' },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message || 'Failed to delete category');
+    return { data };
+  },
+};
+
 export const analyticsAPI = {
   getChatAnalytics: async () => {
     return { data: { message: 'Chat analytics' } };

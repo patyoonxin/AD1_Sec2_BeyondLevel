@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Complaint extends Model
 {
@@ -21,10 +22,10 @@ class Complaint extends Model
         'user_id',
         'title',
         'category',
+        'category_id',
         'description',
         'location',
         'attachments',
-        'ai_category',
         'admin_response',
         'status',
     ];
@@ -67,5 +68,26 @@ class Complaint extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the dynamic category associated with this complaint.
+     *
+     * @return BelongsTo<ComplaintCategory, $this>
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(ComplaintCategory::class, 'category_id');
+    }
+
+    /**
+     * The chronological thread of admin responses on this complaint.
+     *
+     * Ordered oldest-first so the UI can render them top-to-bottom
+     * naturally. Each response includes the admin who wrote it.
+     */
+    public function responses(): HasMany
+    {
+        return $this->hasMany(ComplaintResponse::class)->orderBy('created_at', 'asc');
     }
 }
