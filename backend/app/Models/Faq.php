@@ -1,18 +1,13 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
 class Faq extends Model
 {
-    
     protected $table = 'faq';
-
     protected $primaryKey = 'faq_id';
-
     public $incrementing = true;
-
     protected $keyType = 'int';
 
     protected $fillable = [
@@ -21,6 +16,8 @@ class Faq extends Model
         'question_malay',
         'answer_malay',
         'keywords',
-        'category'
+        'category',
+        'status',
+        'views',
     ];
 }
