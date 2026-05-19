@@ -201,43 +201,91 @@ export const chatbotAPI = {
   }
 };
 
-// ============================================
-// FAQ ENDPOINTS (JSON Database)
-// ============================================
+// ============================================================
+// FAQ ENDPOINTS (Laravel Backend)
+// ============================================================
 export const faqAPI = {
+  // UC029: View FAQ List (public)
   getAllFAQs: async () => {
-    try {
-      const faqs = await databaseService.getAllFAQs();
-      return { data: faqs };
-    } catch (error) {
-      throw error;
-    }
+    const response = await fetch(`http://127.0.0.1:8000/api/faq`);
+    const data = await response.json();
+    return { data: data.data || [] };
   },
 
+  // UC031: Search FAQ
   searchFAQs: async (query) => {
-    try {
-      const faqs = query 
-        ? await databaseService.searchFAQs(query)
-        : await databaseService.getAllFAQs();
-      return { data: faqs };
-    } catch (error) {
-      throw error;
+    if (!query.trim()) {
+      return {
+        data: [],
+        has_data: false,
+        message: "Search field cannot be empty",
+      };
     }
+    const response = await fetch(
+      `http://127.0.0.1:8000/api/faq/search?q=${encodeURIComponent(query)}`,
+    );
+    const data = await response.json();
+    return {
+      data: data.data || [],
+      has_data: data.has_data || false,
+      message: data.message || "",
+    };
   },
 
+  // UC032: Admin - Get ALL FAQs including drafts
+  adminGetAllFAQs: async () => {
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(`http://127.0.0.1:8000/api/admin/faq`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await response.json();
+    return { data: data.data || [] };
+  },
+
+  // UC032: Add FAQ
   addFAQ: async (faqData) => {
-    return { data: { message: 'FAQ added' } };
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(`http://127.0.0.1:8000/api/admin/faq`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(faqData),
+    });
+    return response.json();
   },
 
+  // UC032: Update FAQ
   updateFAQ: async (faqId, faqData) => {
-    return { data: { message: 'FAQ updated' } };
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(
+      `http://127.0.0.1:8000/api/admin/faq/${faqId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(faqData),
+      },
+    );
+    return response.json();
   },
 
+  // UC032: Delete FAQ
   deleteFAQ: async (faqId) => {
-    return { data: { message: 'FAQ deleted' } };
-  }
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(
+      `http://127.0.0.1:8000/api/admin/faq/${faqId}`,
+      {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+    return response.json();
+  },
 };
-
 // ============================================
 // ANALYTICS ENDPOINTS (JSON Database)
 // ============================================
