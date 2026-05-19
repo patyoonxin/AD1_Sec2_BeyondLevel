@@ -7,6 +7,8 @@
     use App\Http\Controllers\ChatbotController;
     use App\Http\Controllers\ChatConversationController;
     use App\Http\Controllers\ChatMessageController;
+    use App\Http\Controllers\AuthController;
+
 
     //Faq routes
     Route::get('/faq', [FaqController::class, 'index']);
@@ -25,3 +27,9 @@
     Route::post('/messages', [ChatMessageController::class, 'store']);
     Route::get('/messages/{conversationId}', [ChatMessageController::class, 'index']);
     Route::patch('/messages/{conversationId}/read', [ChatMessageController::class, 'markAsRead']);
+
+    //Auth routes
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/send-otp', [AuthController::class, 'sendOtp']);
+    Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);

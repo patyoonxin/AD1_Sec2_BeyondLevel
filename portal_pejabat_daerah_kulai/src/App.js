@@ -10,6 +10,7 @@ import ChatbotPage from './pages/ChatbotPage';
 import ComplaintsPage from './pages/ComplaintsPage';
 import FAQPage from './pages/FAQPage';
 import RealAgent from './pages/RealAgent';
+import VerifyOtp from './pages/VerifyOtp';
 
 // Existing components
 import Navbar from './components/Common/Navbar';
@@ -102,6 +103,11 @@ function App() {
               <Navbar user={user} setUser={handleSetUser} />
               <Home />
             </>
+          }
+        />
+        <Route
+          path="/verify-otp"
+          element={<VerifyOtp />
           }
         />
         <Route
