@@ -109,37 +109,41 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-    $request->validate([
-        'phone_number' => 'required',
-        'password' => 'required'
-    ]);
+        $request->validate([
+            'phone_number' => 'required',
+            'password' => 'required'
+        ]);
 
-    // STEP 1: find user
-    $user = User::where('phone_number', $request->phone_number)->first();
+        // STEP 1: find user
+            $user = User::where('phone_number', $request->phone_number)->first();
 
-    if (!$user) {
-        return response()->json([
-            'message' => 'User not found'
-        ], 404);
-    }
+            if (!$user) {
+                return response()->json([
+                    'message' => 'User not found'
+                ], 404);
+            }
 
-    // STEP 2: check password
-    if (!\Hash::check($request->password, $user->password)) {
-        return response()->json([
-            'message' => 'Invalid password'
-        ], 401);
-    }
+        // STEP 2: check password
+            if (!\Hash::check($request->password, $user->password)) {
+                return response()->json([
+                    'message' => 'Invalid password'
+                ], 401);
+            }
 
-    // STEP 3: check OTP verification
-    if (!$user->phone_verified) {
-        return response()->json([
-            'message' => 'Please verify OTP first'
-        ], 403);
-    }
+        // STEP 3: check OTP verification
+            if (!$user->phone_verified) {
+                return response()->json([
+                    'message' => 'Please verify OTP first'
+                ], 403);
+            }
 
-    return response()->json([
-        'message' => 'Login successful',
-        'user' => $user
-    ]);
+        // STEP 4: create token
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            return response()->json([
+                'message' => 'Login successful',
+                'user' => $user,
+                'token' => $token
+            ]);
     }
 }

@@ -11,6 +11,8 @@ import ComplaintsPage from './pages/ComplaintsPage';
 import FAQPage from './pages/FAQPage';
 import RealAgent from './pages/RealAgent';
 import VerifyOtp from './pages/VerifyOtp';
+import ProfilePage from './pages/ProfilePage';
+
 
 // Existing components
 import Navbar from './components/Common/Navbar';
@@ -164,6 +166,10 @@ function App() {
             </>
           }
         />
+        <Route 
+          path="/profile"
+          element={
+              <ProfilePage />} />
 
         {/* ── Admin routes (protected, with AdminLayout sidebar) ────── */}
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />

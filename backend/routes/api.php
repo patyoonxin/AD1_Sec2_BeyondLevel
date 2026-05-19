@@ -8,6 +8,8 @@
     use App\Http\Controllers\ChatConversationController;
     use App\Http\Controllers\ChatMessageController;
     use App\Http\Controllers\AuthController;
+    use App\Http\Controllers\ProfileController;
+    use App\Http\Controllers\AdminUserController;
 
 
     //Faq routes
@@ -33,3 +35,12 @@
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/send-otp', [AuthController::class, 'sendOtp']);
     Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
+
+    //Profile routes
+    Route::middleware('auth:sanctum')->get('/profile', function (Request $request) {return response()->json($request->user());});
+    Route::middleware('auth:sanctum')->put('/profile', [ProfileController::class, 'updateProfile']);
+    Route::middleware('auth:sanctum')->put('/profile/email', [ProfileController::class, 'updateEmail']);
+    Route::post('/change-password', [ProfileController::class, 'changePassword']);
+
+    //Admin user routes
+    Route::put('/admin/users/{id}/role', [AdminUserController::class, 'updateRole']);
