@@ -40,7 +40,7 @@
     Route::middleware('auth:sanctum')->get('/profile', function (Request $request) {return response()->json($request->user());});
     Route::middleware('auth:sanctum')->put('/profile', [ProfileController::class, 'updateProfile']);
     Route::middleware('auth:sanctum')->put('/profile/email', [ProfileController::class, 'updateEmail']);
-    Route::post('/change-password', [ProfileController::class, 'changePassword']);
-
+    Route::middleware('auth:sanctum')->post('/change-password', [ProfileController::class, 'changePassword']);
+    
     //Admin user routes
     Route::put('/admin/users/{id}/role', [AdminUserController::class, 'updateRole']);

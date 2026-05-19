@@ -3,27 +3,35 @@ import axios from "axios";
 
 const ProfilePage = () => {
   // ===============================
-  // STATE: user data from backend
+  // USER STATE
   // ===============================
   const [user, setUser] = useState(null);
-
-  // loading state while fetching API
   const [loading, setLoading] = useState(true);
 
   // ===============================
-  // EDIT MODE (toggle view/edit)
+  // UI STATES
   // ===============================
   const [editMode, setEditMode] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(true);
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
 
-  // form data for updating profile
+  // ===============================
+  // FORM STATES
+  // ===============================
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone_number: "",
   });
 
+  const [passwordData, setPasswordData] = useState({
+    current_password: "",
+    new_password: "",
+    new_password_confirmation: "",
+  });
+
   // ===============================
-  // FETCH PROFILE ON PAGE LOAD
+  // FETCH PROFILE
   // ===============================
   useEffect(() => {
     fetchProfile();
@@ -40,10 +48,8 @@ const ProfilePage = () => {
         },
       });
 
-      // save user data into state
       setUser(res.data);
 
-      // fill form with existing data
       setFormData({
         name: res.data.name || "",
         email: res.data.email || "",
@@ -58,7 +64,7 @@ const ProfilePage = () => {
   };
 
   // ===============================
-  // HANDLE INPUT CHANGE
+  // FORM HANDLER
   // ===============================
   const handleChange = (e) => {
     setFormData({
@@ -68,7 +74,7 @@ const ProfilePage = () => {
   };
 
   // ===============================
-  // UPDATE PROFILE API CALL
+  // UPDATE PROFILE
   // ===============================
   const handleUpdateProfile = async () => {
     try {
@@ -85,128 +91,178 @@ const ProfilePage = () => {
         }
       );
 
-      // update UI with new data
       setUser(res.data.user);
-
-      // exit edit mode
       setEditMode(false);
 
       alert("Profile updated successfully!");
-
     } catch (err) {
       console.error("Update failed:", err);
     }
   };
 
   // ===============================
-  // LOADING STATE UI
+  // PASSWORD HANDLER
   // ===============================
-  if (loading) {
-    return <div className="p-6">Loading profile...</div>;
-  }
+  const handlePasswordChange = (e) => {
+    setPasswordData({
+      ...passwordData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleChangePassword = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+
+      await axios.post(
+        "http://127.0.0.1:8000/api/change-password",
+        passwordData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+
+      alert("Password changed successfully!");
+
+      setShowPasswordForm(false);
+      setPasswordData({
+        current_password: "",
+        new_password: "",
+        new_password_confirmation: "",
+      });
+
+    } catch (err) {
+      console.log("ERROR RESPONSE:", err.response?.data);
+      console.error("Password change failed:", err);
+    }
+  };
 
   // ===============================
-  // ERROR STATE UI
+  // LOADING
   // ===============================
-  if (!user) {
-    return <div className="p-6 text-red-500">Failed to load profile.</div>;
-  }
+  if (loading) return <div className="p-6">Loading profile...</div>;
+  if (!user) return <div className="p-6 text-red-500">Failed to load profile.</div>;
 
   // ===============================
-  // MAIN UI
+  // UI
   // ===============================
   return (
     <div className="max-w-3xl mx-auto mt-10 bg-white shadow rounded-xl p-6">
-      
+
       <h1 className="text-2xl font-bold mb-6">👤 My Profile</h1>
 
-      {/* ===============================
-          VIEW MODE (READ ONLY)
-      =============================== */}
+      {/* ================= DROPDOWN ================= */}
+      <div className="mb-6 border rounded p-3">
+
+        <button
+          onClick={() => setShowDropdown(!showDropdown)}
+          className="font-semibold text-lg"
+        >
+          ▼ My Profile
+        </button>
+
+        {showDropdown && (
+          <div className="mt-3 text-gray-700 space-y-1">
+            <p><b>Name:</b> {user.name}</p>
+            <p><b>Email:</b> {user.email || "No email added"}</p>
+            <p><b>Phone:</b> {user.phone_number}</p>
+            <p><b>Role:</b> {user.role}</p>
+          </div>
+        )}
+      </div>
+
+      {/* ================= BUTTONS ================= */}
       {!editMode ? (
-        <div className="space-y-3 text-gray-700">
+        <div className="space-x-2">
 
-          <p>
-            <span className="font-semibold">Name:</span> {user.name}
-          </p>
-
-          <p>
-            <span className="font-semibold">Email:</span>{" "}
-            {user.email || "No email added"}
-          </p>
-
-          <p>
-            <span className="font-semibold">Phone:</span>{" "}
-            {user.phone_number}
-          </p>
-
-          {/* EDIT BUTTON */}
           <button
             onClick={() => setEditMode(true)}
-            className="mt-5 px-4 py-2 bg-blue-600 text-white rounded"
+            className="px-4 py-2 bg-blue-600 text-white rounded"
           >
             Edit Profile
           </button>
-        </div>
 
+          <button
+            onClick={() => setShowPasswordForm(true)}
+            className="px-4 py-2 bg-red-600 text-white rounded"
+          >
+            Change Password
+          </button>
+
+        </div>
       ) : (
-        /* ===============================
-            EDIT MODE (FORM)
-        =============================== */
         <div className="space-y-3">
 
-          {/* NAME INPUT */}
-          <input
-            type="text"
-            name="name"
-            placeholder="Name"
-            value={formData.name}
-            onChange={handleChange}
-            className="border p-2 w-full rounded"
-          />
+          <input name="name" value={formData.name} onChange={handleChange} className="border p-2 w-full" />
+          <input name="email" value={formData.email} onChange={handleChange} className="border p-2 w-full" />
+          <input name="phone_number" value={formData.phone_number} onChange={handleChange} className="border p-2 w-full" />
 
-          {/* EMAIL INPUT */}
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
-            className="border p-2 w-full rounded"
-          />
-
-          {/* PHONE INPUT */}
-          <input
-            type="text"
-            name="phone_number"
-            placeholder="Phone Number"
-            value={formData.phone_number}
-            onChange={handleChange}
-            className="border p-2 w-full rounded"
-          />
-
-          {/* ACTION BUTTONS */}
           <div className="space-x-2">
-
-            {/* SAVE BUTTON */}
-            <button
-              onClick={handleUpdateProfile}
-              className="px-4 py-2 bg-green-600 text-white rounded"
-            >
-              Save Changes
+            <button onClick={handleUpdateProfile} className="bg-green-600 text-white px-4 py-2 rounded">
+              Save
             </button>
 
-            {/* CANCEL BUTTON */}
+            <button onClick={() => setEditMode(false)} className="bg-gray-400 text-white px-4 py-2 rounded">
+              Cancel
+            </button>
+          </div>
+
+        </div>
+      )}
+
+      {/* ================= PASSWORD ================= */}
+      {showPasswordForm && (
+        <div className="mt-6 border p-4 space-y-3">
+
+          <input
+            type="password"
+            name="current_password"
+            placeholder="Current Password"
+            value={passwordData.current_password}
+            onChange={handlePasswordChange}
+            className="border p-2 w-full"
+          />
+
+          <input
+            type="password"
+            name="new_password"
+            placeholder="New Password"
+            value={passwordData.new_password}
+            onChange={handlePasswordChange}
+            className="border p-2 w-full"
+          />
+
+          <input
+            type="password"
+            name="new_password_confirmation"
+            placeholder="Confirm Password"
+            value={passwordData.new_password_confirmation}
+            onChange={handlePasswordChange}
+            className="border p-2 w-full"
+          />
+
+          <div className="space-x-2">
             <button
-              onClick={() => setEditMode(false)}
-              className="px-4 py-2 bg-gray-400 text-white rounded"
+              onClick={handleChangePassword}
+              className="bg-green-600 text-white px-4 py-2"
+            >
+              Update Password
+            </button>
+
+            <button
+              onClick={() => setShowPasswordForm(false)}
+              className="bg-gray-400 text-white px-4 py-2"
             >
               Cancel
             </button>
-
           </div>
+
         </div>
       )}
+
     </div>
   );
 };

@@ -19,14 +19,6 @@ class ProfileController extends Controller
         return response()->json($request->user());
     }
 
-    public function changePassword(Request $request)
-    {
-        return $this->userService->changePassword(
-            $request->user(),
-            $request->all()
-        );
-    }
-
     public function updateEmail(Request $request)
     {
         $request->validate([
@@ -66,4 +58,28 @@ class ProfileController extends Controller
             'user' => $user
         ]);
     }
+
+    public function changePassword(Request $request)
+{
+    $request->validate([
+        'current_password' => 'required',
+        'new_password' => 'required|min:6|confirmed',
+    ]);
+
+    $user = auth()->user();
+
+    if (!\Hash::check($request->current_password, $user->password)) {
+        return response()->json([
+            'message' => 'Current password is incorrect'
+        ], 401);
+    }
+
+    $user->update([
+        'password' => bcrypt($request->new_password)
+    ]);
+
+    return response()->json([
+        'message' => 'Password changed successfully'
+    ]);
+}
 }
