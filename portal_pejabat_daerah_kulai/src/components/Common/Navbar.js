@@ -1,10 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../image/logo.png';
+import { chatAPI } from '../../services/api';
 
 function Navbar({ user, setUser }) {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [hasConversation, setHasConversation] = useState(false);
+
+  // Fetch user messages to check if button should be visible
+  useEffect(() => {
+    const fetchConversation = async () => {
+      try {
+        // Only fetch if user is logged in and not admin
+        if (user && user.id && user.role !== 'admin') {
+          const response = await chatAPI.checkUserHasConversation(user.id);
+          console.log('Navbar - User Messages Response:', response);
+          
+        setHasConversation(response.hasConversation);
+        } else {
+          setHasConversation(false);
+        }
+      } catch (error) {
+        console.error('Error fetching user messages:', error);
+        setHasConversation(false);
+      }
+    };
+
+    fetchConversation();
+  }, [user]);
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
@@ -44,6 +68,14 @@ function Navbar({ user, setUser }) {
               >
                 ❓ Soalan Lazim
               </Link>
+              {hasConversation && (
+                <Link
+                  to="/real-agent"
+                  className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                >
+                  📞 Permintaan Saya
+                </Link>
+              )}
               
               <button
                 onClick={handleLogout}
@@ -108,6 +140,15 @@ function Navbar({ user, setUser }) {
                 >
                   ❓ Soalan Lazim
                 </Link>
+                {hasConversation && (
+                  <Link
+                    to="/real-agent"
+                    className="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 rounded-lg transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    📞 Permintaan Saya
+                  </Link>
+                )}
                 <Link
                   to="/dashboard"
                   className="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 rounded-lg transition-colors"

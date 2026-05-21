@@ -69,7 +69,7 @@ function RealAgent() {
 
     const interval = setInterval(() => {
       loadMessages(conversationId);
-    }, 20000); // 10 seconds polling
+    }, 10000); // 10 seconds polling
 
     return () => clearInterval(interval);
   }, [conversationId]);

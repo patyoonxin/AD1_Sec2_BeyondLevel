@@ -4,6 +4,7 @@ import { adminChatAPI } from "../../services/api";
 function AdminRealAgent() {
   //const adminId = parseInt(localStorage.getItem("userId"));
   const adminId = 1; // TEMP FIX: force to user #1 (admin) for testing. Remove later when auth is done.
+  //console.log(" userId:", localStorage.getItem("userId"));
 
   // conversations from backend
   const [conversations, setConversations] = useState([]);
@@ -70,7 +71,7 @@ function AdminRealAgent() {
     loadMessages();
 
     // polling (real-time simulation)
-    const interval = setInterval(loadMessages, 3000);
+    const interval = setInterval(loadMessages, 20000);
     return () => clearInterval(interval);
   }, [selectedConversation]);
 

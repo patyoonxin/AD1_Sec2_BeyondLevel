@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 
 function ChatbotPage() {
   const navigate = useNavigate();
-
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -13,14 +12,71 @@ function ChatbotPage() {
       timestamp: new Date(),
     },
   ]);
-
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+  const getChatKey = (userId) => `chat_cache_${userId}`;
+  const userId = localStorage.getItem("userId");
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  const saveChatToStorage = (userId, messages) => {
+    const key = getChatKey(userId);
+    const existing = localStorage.getItem(key);
+    let expiry;
+    if (existing) {
+      const parsed = JSON.parse(existing);
+      // keep expiry ONLY if still valid
+      expiry = Date.now() > parsed.expiry
+        ? Date.now() + CACHE_TTL
+        : parsed.expiry;
+    } else {
+      expiry = Date.now() + CACHE_TTL; // only set once
+    }
+
+    localStorage.setItem(
+      key,
+      JSON.stringify({ messages, expiry })
+    );
+  };
+
+  const loadChatFromStorage = (userId) => {
+    const raw = localStorage.getItem(getChatKey(userId));
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    // expired → delete
+    if (Date.now() > data.expiry) {
+      localStorage.removeItem(getChatKey(userId));
+      return null;
+    }
+    return data.messages;
+  };
+
+  //load chat from local storage
+  useEffect(() => {
+    if (!userId) return;
+    const cached = loadChatFromStorage(userId);
+    if (cached) {
+      const normalized = cached.map((m) => ({
+        ...m,
+        timestamp: new Date(m.timestamp),
+      }));
+      setMessages(normalized);
+    }
+  }, []);
+
+  //save chat when messages change
+  useEffect(() => {
+    if (!userId) return;
+
+    if (userId && messages.length > 1) {
+      saveChatToStorage(userId, messages);
+    }
+  }, [messages, userId]);
+
 
   useEffect(() => {
     scrollToBottom();
@@ -88,17 +144,17 @@ function ChatbotPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="h-[85vh] flex flex-col overflow-hidden bg-gray-50">
 
       {/* HEADER */}
-      <div className="bg-white border-b border-gray-200 shadow-sm p-6">
-        <h1 className="text-2xl font-bold text-gray-900">
+      {/* <div className="bg-white border-b border-gray-200 shadow-sm p-6">
+        <h2 className="text-2xl font-bold text-gray-900">
           💬 AI-Chatbots & Assistants
-        </h1>
+        </h2>
         <p className="text-sm text-gray-600 mt-1">
           Smart customer service available 24/7
         </p>
-      </div>
+      </div> */}
 
       {/* CHAT */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
@@ -118,11 +174,8 @@ function ChatbotPage() {
                   : 'message-bot-bubble'
               }`}
             >
-              <p>{message.text}</p>
-
-              {/* ===========================
-                  ESCALATE BUTTON
-              ============================ */}
+              <div className='chat-bubble-content-container'>
+              {message.text}
               {message.showAgentButton && (
                 <button
                   onClick={() => navigate('/real-agent')}
@@ -131,7 +184,7 @@ function ChatbotPage() {
                   💬 Contact Live Agent
                 </button>
               )}
-
+               </div>
               <span className="message-time">
                 {message.timestamp.toLocaleTimeString('id-ID', {
                   hour: '2-digit',
@@ -158,7 +211,7 @@ function ChatbotPage() {
       </div>
 
       {/* INPUT */}
-      <div className="bg-white border-t border-gray-200 p-6">
+      <div className="bg-white border-t border-gray-200 p-2 sticky bottom-0">
         <form onSubmit={handleSendMessage} className="flex space-x-3">
           <input
             type="text"
@@ -174,7 +227,7 @@ function ChatbotPage() {
             disabled={loading}
             className="btn btn-primary"
           >
-            {loading ? '⏳' : '📤 Send'}
+            {loading ? '⏳' : 'Send'}
           </button>
         </form>
       </div>
