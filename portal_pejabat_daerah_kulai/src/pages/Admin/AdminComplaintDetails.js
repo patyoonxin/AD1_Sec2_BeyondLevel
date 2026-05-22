@@ -150,10 +150,10 @@ function AdminComplaintDetails() {
               backgroundPosition: 'right 8px center',
             }}
           >
-            <option value="pending"     style={{ background: '#fff', color: '#1a1a1a' }}>{t('pending', 'Pending')}</option>
-            <option value="in_progress" style={{ background: '#fff', color: '#1a1a1a' }}>{t('in_progress', 'In Progress')}</option>
-            <option value="resolved"    style={{ background: '#fff', color: '#1a1a1a' }}>{t('resolved', 'Resolved')}</option>
-            <option value="rejected"    style={{ background: '#fff', color: '#1a1a1a' }}>{t('rejected', 'Rejected')}</option>
+            <option value="pending"     disabled={complaint.status === 'pending'}     style={{ background: '#fff', color: complaint.status === 'pending'     ? '#aaa' : '#1a1a1a' }}>{t('pending', 'Pending')}</option>
+            <option value="in_progress" disabled={complaint.status === 'in_progress'} style={{ background: '#fff', color: complaint.status === 'in_progress' ? '#aaa' : '#1a1a1a' }}>{t('in_progress', 'In Progress')}</option>
+            <option value="resolved"    disabled={complaint.status === 'resolved'}    style={{ background: '#fff', color: complaint.status === 'resolved'    ? '#aaa' : '#1a1a1a' }}>{t('resolved', 'Resolved')}</option>
+            <option value="rejected"    disabled={complaint.status === 'rejected'}    style={{ background: '#fff', color: complaint.status === 'rejected'    ? '#aaa' : '#1a1a1a' }}>{t('rejected', 'Rejected')}</option>
           </select>
         </div>
       </Card>
@@ -312,7 +312,7 @@ function AdminComplaintDetails() {
           <Card>
             <SectionTitle>{t('timestamps', 'Timestamps')}</SectionTitle>
             <MetaRow label={t('submitted_at', 'Submitted at')}     value={new Date(complaint.created_at).toLocaleString()} />
-            <MetaRow label={t('last_updated', 'Last Updated')}    value={new Date(complaint.updated_at).toLocaleString()} />
+            <MetaRow label={t('last_updated', 'Last Updated Status')}    value={new Date(complaint.updated_at).toLocaleString()} />
           </Card>
         </div>
       </div>

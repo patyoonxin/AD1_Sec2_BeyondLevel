@@ -28,6 +28,8 @@ function AdminCategories() {
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({ name: '', description: '', is_active: true });
   const [saving, setSaving] = useState(false);
+  const [nameError, setNameError] = useState('');
+  const [saveError, setSaveError] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   const loadCategories = async () => {
@@ -37,7 +39,7 @@ function AdminCategories() {
       const res = await categoryAPI.getAllCategories();
       setCategories(Array.isArray(res.data) ? res.data : []);
     } catch (e) {
-      setError(e.message || 'Failed to load categories');
+      setError('failed');
     } finally {
       setLoading(false);
     }
@@ -55,6 +57,8 @@ function AdminCategories() {
   const openAdd = () => {
     setEditingId(null);
     setFormData({ name: '', description: '', is_active: true });
+    setNameError('');
+    setSaveError('');
     setModalOpen(true);
   };
 
@@ -65,12 +69,26 @@ function AdminCategories() {
       description: category.description || '',
       is_active: category.is_active ?? true,
     });
+    setNameError('');
+    setSaveError('');
     setModalOpen(true);
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!formData.name.trim()) return;
+    if (!formData.name.trim()) {
+      setNameError(t('category_name_empty', 'Category name cannot be empty.'));
+      return;
+    }
+    const isDuplicate = categories.some(
+      (c) => c.name.toLowerCase() === formData.name.trim().toLowerCase() && c.id !== editingId
+    );
+    if (isDuplicate) {
+      setNameError(t('category_name_duplicate', 'Category already exists. Please choose a unique name.'));
+      return;
+    }
+    setNameError('');
+    setSaveError('');
     setSaving(true);
     try {
       if (editingId) {
@@ -81,7 +99,7 @@ function AdminCategories() {
       setModalOpen(false);
       await loadCategories();
     } catch (err) {
-      alert(err.message || 'Failed to save category');
+      setSaveError(t('connect_error', 'Failed to connect. Please try again later.'));
     } finally {
       setSaving(false);
     }
@@ -143,7 +161,11 @@ function AdminCategories() {
         {loading ? (
           <div style={{ padding: '40px 0', textAlign: 'center', color: '#888780' }}>{t('loading', 'Loading...')}</div>
         ) : error ? (
-          <div style={{ padding: '40px 0', textAlign: 'center', color: '#a32d2d' }}>{error}</div>
+          <div style={{ padding: '48px 0', textAlign: 'center' }}>
+            <p style={{ fontWeight: 600, color: '#a32d2d', margin: '0 0 14px', fontSize: 13 }}>
+              {t('connect_error', 'Failed to connect. Please try again later.')}
+            </p>
+          </div>
         ) : (
           <DataTable columns={columns} rows={filtered} />
         )}
@@ -167,18 +189,21 @@ function AdminCategories() {
             <form onSubmit={handleSave}>
               <div style={{ marginBottom: 12 }}>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 500, marginBottom: 4, color: '#555450' }}>
-                  {t('name', 'Name')}
+                  {t('name', 'Name')} <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
+                  onChange={(e) => { setFormData({ ...formData, name: e.target.value }); if (e.target.value.trim()) setNameError(''); }}
                   style={{
                     width: '100%', padding: '8px 10px', borderRadius: 6,
-                    border: '1px solid #d3d1c7', fontSize: 13, outline: 'none',
+                    border: nameError ? '1px solid #ef4444' : '1px solid #d3d1c7',
+                    fontSize: 13, outline: 'none',
                   }}
                 />
+                {nameError && (
+                  <p style={{ margin: '4px 0 0', fontSize: 12, color: '#a32d2d' }}>{nameError}</p>
+                )}
               </div>
               <div style={{ marginBottom: 12 }}>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 500, marginBottom: 4, color: '#555450' }}>
@@ -205,6 +230,9 @@ function AdminCategories() {
                   {t('active', 'Active')}
                 </label>
               </div>
+              {saveError && (
+                <p style={{ margin: '0 0 12px', fontSize: 12, color: '#a32d2d', background: '#fcebeb', padding: '8px 10px', borderRadius: 6 }}>{saveError}</p>
+              )}
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
                 <Btn small onClick={() => setModalOpen(false)}>{t('cancel', 'Cancel')}</Btn>
                 <Btn primary small type="submit" disabled={saving}>
