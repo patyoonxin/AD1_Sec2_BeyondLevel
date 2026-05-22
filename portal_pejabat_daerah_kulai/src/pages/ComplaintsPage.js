@@ -19,6 +19,8 @@ function ComplaintsPage() {
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({ title: false, category: false, description: false, location: false });
+  const [showEmptyBanner, setShowEmptyBanner] = useState(false);
 
   // Search & filter state for the complaint tracking module
   const [searchTerm, setSearchTerm] = useState('');
@@ -68,10 +70,32 @@ function ComplaintsPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setErrorMessage('');
     setSuccessMessage('');
 
+    // All-blank guard: show prominent banner if nothing has been entered at all
+    const allBlank = !formData.title.trim() && !formData.category.trim()
+      && !formData.description.trim() && !formData.location.trim();
+    if (allBlank) {
+      setShowEmptyBanner(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    setShowEmptyBanner(false);
+
+    // Per-field validation for partially filled submissions
+    const errors = {
+      title:       !formData.title.trim(),
+      category:    !formData.category.trim(),
+      description: !formData.description.trim(),
+      location:    !formData.location.trim(),
+    };
+    setFieldErrors(errors);
+    if (Object.values(errors).some(Boolean)) {
+      return;
+    }
+
+    setLoading(true);
     try {
       const submitData = new FormData();
       submitData.append('title', formData.title);
@@ -81,24 +105,26 @@ function ComplaintsPage() {
       if (formData.attachment) {
         submitData.append('attachment', formData.attachment);
       }
-      
+
       const response = await complaintAPI.submitComplaint(submitData);
-      
+
       // Show success message
       setSuccessMessage(`Complaint submitted successfully! Reference #${response.data.record_id || response.data.id}`);
-      
+
       // Reset form
       setFormData({ title: '', category: '', description: '', location: '', attachment: null });
+      setFieldErrors({ title: false, category: false, description: false, location: false });
+      setShowEmptyBanner(false);
       setShowForm(false);
-      
+
       // Refresh complaints list
       await fetchComplaints();
-      
+
       // Clear success message after 3 seconds
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
-      const errorMsg = error.message || 'Error submitting complaint. Please try again.';
-      setErrorMessage(`${errorMsg}`);
+      setErrorMessage(t('submit_error', 'Unable to submit complaint. Please try again later.'));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       console.error('Error submitting complaint:', error);
     } finally {
       setLoading(false);
@@ -295,63 +321,82 @@ function ComplaintsPage() {
           <div className="card mb-8 fade-in">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('submit_new_complaint', 'Submit New Complaint')}</h2>
             <form onSubmit={handleSubmit} className="space-y-5">
+              {/* All-blank submission banner */}
+              {showEmptyBanner && (
+                <div className="p-4 bg-red-50 border border-red-300 rounded-lg text-red-700 text-sm font-medium fade-in">
+                  {t('all_fields_empty', 'Please enter your complaint details before submitting.')}
+                </div>
+              )}
               {/* Title */}
               <div className="form-group">
-                <label className="form-label">{t('title', 'Title')}</label>
+                <label className="form-label">{t('title', 'Title')} <span className="text-red-500">*</span></label>
                 <input
                   type="text"
                   value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  onChange={(e) => { setFormData({ ...formData, title: e.target.value }); setFieldErrors((p) => ({ ...p, title: false })); setShowEmptyBanner(false); }}
                   className="form-input"
                   placeholder={t('placeholder_title', 'Describe your title')}
-                  required
+                  style={fieldErrors.title ? { borderColor: '#ef4444' } : undefined}
                 />
+                {fieldErrors.title && (
+                  <p className="text-red-500 text-xs mt-1">{t('field_required', 'This field is required')}</p>
+                )}
               </div>
 
               {/* Category */}
               <div className="form-group">
-                <label className="form-label">{t('category', 'Category')}</label>
+                <label className="form-label">{t('category', 'Category')} <span className="text-red-500">*</span></label>
                 <select
                   value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  onChange={(e) => { setFormData({ ...formData, category: e.target.value }); setFieldErrors((p) => ({ ...p, category: false })); setShowEmptyBanner(false); }}
                   className="form-select"
+                  style={fieldErrors.category ? { borderColor: '#ef4444' } : undefined}
                 >
                   <option value="">{t('select_category', 'Select a category')}</option>
                   {categories.map((cat) => (
                     <option key={cat.id} value={cat.name}>{cat.name}</option>
                   ))}
                 </select>
+                {fieldErrors.category && (
+                  <p className="text-red-500 text-xs mt-1">{t('field_required', 'This field is required')}</p>
+                )}
               </div>
 
               {/* Description */}
               <div className="form-group">
-                <label className="form-label">{t('description', 'Description')}</label>
+                <label className="form-label">{t('description', 'Description')} <span className="text-red-500">*</span></label>
                 <textarea
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) => { setFormData({ ...formData, description: e.target.value }); setFieldErrors((p) => ({ ...p, description: false })); setShowEmptyBanner(false); }}
                   className="form-textarea"
                   placeholder={t('placeholder_description', 'Describe in detail...')}
                   rows="5"
-                  required
+                  style={fieldErrors.description ? { borderColor: '#ef4444' } : undefined}
                 ></textarea>
+                {fieldErrors.description && (
+                  <p className="text-red-500 text-xs mt-1">{t('field_required', 'This field is required')}</p>
+                )}
               </div>
 
               {/* Location */}
               <div className="form-group">
-                <label className="form-label">{t('location', 'Location')}</label>
+                <label className="form-label">{t('location', 'Location')} <span className="text-red-500">*</span></label>
                 <input
                   type="text"
                   value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  onChange={(e) => { setFormData({ ...formData, location: e.target.value }); setFieldErrors((p) => ({ ...p, location: false })); setShowEmptyBanner(false); }}
                   className="form-input"
                   placeholder={t('placeholder_location', 'Enter the location (e.g., Jalan Merdeka, Kulai)')}
-                  required
+                  style={fieldErrors.location ? { borderColor: '#ef4444' } : undefined}
                 />
+                {fieldErrors.location && (
+                  <p className="text-red-500 text-xs mt-1">{t('field_required', 'This field is required')}</p>
+                )}
               </div>
 
               {/* Attachment */}
               <div className="form-group">
-                <label className="form-label">{t('attachment_optional', 'Attachment (Optional)')}</label>
+                <label className="form-label">{t('attachment', 'Attachment')}</label>
                   <div
                   className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${isDragOver ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-blue-400'}`}
                   onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
