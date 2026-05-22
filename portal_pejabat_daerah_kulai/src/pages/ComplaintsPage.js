@@ -491,7 +491,6 @@ function ComplaintsPage() {
 
           {complaints.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-state-icon">📭</div>
               <p className="empty-state-text">{t('no_records_yet', 'No records yet')}</p>
               <p className="text-gray-500 text-sm mt-2">{t('no_complaints_hint', 'Submit a complaint now to get help')}</p>
             </div>
