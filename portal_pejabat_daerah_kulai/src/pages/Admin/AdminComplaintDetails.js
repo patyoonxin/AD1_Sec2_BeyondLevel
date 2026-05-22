@@ -33,8 +33,9 @@ function AdminComplaintDetails() {
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState('');
 
-  const [newResponse, setNewResponse] = useState('');
-  const [submitting, setSubmitting]   = useState(false);
+  const [newResponse, setNewResponse]   = useState('');
+  const [responseError, setResponseError] = useState('');
+  const [submitting, setSubmitting]       = useState(false);
   const [statusUpdating, setStatusUpdating] = useState(false);
 
   /* Pull the complaint (with full response thread) from the backend */
@@ -57,17 +58,18 @@ function AdminComplaintDetails() {
   /* Append a new admin response */
   const submitResponse = async () => {
     const trimmed = newResponse.trim();
-    if (trimmed.length < 5) {
-      alert('Response must be at least 5 characters.');
+    if (!trimmed) {
+      setResponseError(t('response_empty', 'Response cannot be empty'));
       return;
     }
+    setResponseError('');
     setSubmitting(true);
     try {
       await complaintAPI.respondToComplaint(complaint.id, trimmed);
       setNewResponse('');
       await load();
     } catch (e) {
-      alert(e.message || 'Failed to submit response');
+      setResponseError(t('response_submit_error', 'Failed to send response. Please try again later.'));
     } finally {
       setSubmitting(false);
     }
@@ -263,17 +265,21 @@ function AdminComplaintDetails() {
               <SectionTitle>{t('add_response', 'Add a Response')}</SectionTitle>
               <textarea
                 value={newResponse}
-                onChange={(e) => setNewResponse(e.target.value)}
+                onChange={(e) => { setNewResponse(e.target.value); if (e.target.value.trim()) setResponseError(''); }}
                 rows={4}
                 placeholder={t('placeholder_response', 'Type your response...')}
                 style={{
                   width: '100%', padding: 10, fontSize: 13,
-                  border: '1px solid #d3d1c7', borderRadius: 7,
+                  border: responseError ? '1px solid #ef4444' : '1px solid #d3d1c7',
+                  borderRadius: 7,
                   fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box',
                 }}
               />
+              {responseError && (
+                <p style={{ margin: '4px 0 0', fontSize: 12, color: '#a32d2d' }}>{responseError}</p>
+              )}
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
-                <Btn small primary onClick={submitResponse}>
+                <Btn small primary onClick={submitResponse} disabled={submitting}>
                   {submitting ? t('loading', 'Loading...') : t('append_response', 'Append Response')}
                 </Btn>
               </div>

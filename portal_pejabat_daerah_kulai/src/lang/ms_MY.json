@@ -119,6 +119,8 @@
   "complaint_category": "Kategori Aduan",
   "ai_category": "Kategori AI",
   "date_range": "Julat Tarikh",
+  "response_empty": "Maklum balas tidak boleh kosong",
+  "response_submit_error": "Gagal menghantar maklum balas. Sila cuba lagi kemudian.",
   "load_complaints_error": "Tidak dapat memuatkan aduan. Sila cuba lagi kemudian.",
   "no_complaints_yet": "Tiada aduan yang dihantar lagi.",
   "try_again": "Cuba Lagi",

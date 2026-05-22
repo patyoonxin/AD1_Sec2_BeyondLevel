@@ -119,6 +119,8 @@
   "complaint_category": "Complaint Category",
   "ai_category": "AI Category",
   "date_range": "Date Range",
+  "response_empty": "Response cannot be empty",
+  "response_submit_error": "Failed to send response. Please try again later.",
   "load_complaints_error": "Unable to load complaints. Please try again later.",
   "no_complaints_yet": "No complaints submitted yet.",
   "try_again": "Try Again",
