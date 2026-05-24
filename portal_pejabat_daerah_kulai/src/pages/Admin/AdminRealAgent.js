@@ -2,9 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { adminChatAPI } from "../../services/api";
 
 function AdminRealAgent() {
-  //const adminId = parseInt(localStorage.getItem("userId"));
-  const adminId = 1; // TEMP FIX: force to user #1 (admin) for testing. Remove later when auth is done.
-  //console.log(" userId:", localStorage.getItem("userId"));
+  const adminId = parseInt(localStorage.getItem("userId"));
+  //const adminId = 1; 
 
   // conversations from backend
   const [conversations, setConversations] = useState([]);
