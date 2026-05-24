@@ -3,17 +3,10 @@ import { adminChatAPI } from "../../services/api";
 
 function AdminRealAgent() {
   const adminId = parseInt(localStorage.getItem("userId"));
-  //const adminId = 1; 
 
-  // conversations from backend
   const [conversations, setConversations] = useState([]);
-
-  // selected conversation
   const [selectedConversation, setSelectedConversation] = useState(null);
-
-  // messages
   const [messages, setMessages] = useState([]);
-
   const [inputValue, setInputValue] = useState("");
 
   const messagesEndRef = useRef(null);
@@ -29,7 +22,6 @@ function AdminRealAgent() {
 
         setConversations(data);
 
-        // auto select first conversation
         if (data.length > 0 && !selectedConversation) {
           setSelectedConversation(data[0]);
         }
@@ -55,9 +47,13 @@ function AdminRealAgent() {
         const formatted = data.map((msg) => ({
           id: msg.id,
           text: msg.message,
-          sender: msg.sender_id === adminId ? "admin" : "user",
+
+          // ✅ FIXED: use relationship
+          sender: msg.sender.role === "admin" ? "admin" : "user",
+
           senderName:
-            msg.sender_id === adminId ? "You" : `User #${msg.sender_id}`,
+            msg.sender.name || msg.sender.username || `User #${msg.sender.id}`,
+
           timestamp: new Date(msg.created_at),
         }));
 
@@ -69,7 +65,6 @@ function AdminRealAgent() {
 
     loadMessages();
 
-    // polling (real-time simulation)
     const interval = setInterval(loadMessages, 20000);
     return () => clearInterval(interval);
   }, [selectedConversation]);
@@ -93,25 +88,22 @@ function AdminRealAgent() {
     setInputValue("");
 
     try {
-      await adminChatAPI.sendMessage(
-        selectedConversation.id,
-        adminId,
-        text
-      );
+      await adminChatAPI.sendMessage(selectedConversation.id, adminId, text);
 
-      // reload messages
-      const res = await adminChatAPI.getMessages(
-        selectedConversation.id
-      );
+      const res = await adminChatAPI.getMessages(selectedConversation.id);
 
       const data = res.data ?? res;
 
       const formatted = data.map((msg) => ({
         id: msg.id,
         text: msg.message,
-        sender: msg.sender_id === adminId ? "admin" : "user",
+
+        // ✅ FIXED: use relationship
+        sender: msg.sender.role === "admin" ? "admin" : "user",
+
         senderName:
-          msg.sender_id === adminId ? "You" : `User #${msg.sender_id}`,
+          msg.sender.name || msg.sender.username || `User #${msg.sender.id}`,
+
         timestamp: new Date(msg.created_at),
       }));
 
@@ -123,43 +115,32 @@ function AdminRealAgent() {
 
   return (
     <div className="flex h-screen bg-gray-100">
-
       {/* SIDEBAR */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-
+      <div className="w-80 bg-white border-r flex flex-col">
         <div className="p-5 border-b">
           <h1 className="text-2xl font-bold">💬 Support Chats</h1>
           <p className="text-sm text-gray-500">Admin dashboard</p>
         </div>
 
         <div className="flex-1 overflow-y-auto">
-
           {conversations.map((conv) => (
             <div
               key={conv.id}
               onClick={() => setSelectedConversation(conv)}
               className={`p-4 cursor-pointer border-b hover:bg-gray-50 ${
-                selectedConversation?.id === conv.id
-                  ? "bg-blue-50"
-                  : ""
+                selectedConversation?.id === conv.id ? "bg-blue-50" : ""
               }`}
             >
-              <div className="font-semibold">
-                User #{conv.user_id}
-              </div>
+              <div className="font-semibold">User #{conv.user_id}</div>
 
-              <div className="text-sm text-gray-500">
-                {conv.status}
-              </div>
+              <div className="text-sm text-gray-500">{conv.status}</div>
             </div>
           ))}
-
         </div>
       </div>
 
       {/* CHAT */}
       <div className="flex-1 flex flex-col">
-
         {/* HEADER */}
         <div className="bg-white p-5 border-b">
           <h2 className="text-xl font-bold">
@@ -171,24 +152,31 @@ function AdminRealAgent() {
 
         {/* MESSAGES */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
-
           {messages.map((msg) => (
             <div
               key={msg.id}
               className={`flex ${
-                msg.sender === "admin"
-                  ? "justify-end"
-                  : "justify-start"
+                msg.sender === "admin" ? "justify-end" : "justify-start"
               }`}
             >
-              <div
-                className={`px-4 py-2 rounded-xl max-w-xs ${
-                  msg.sender === "admin"
-                    ? "bg-blue-600 text-white"
-                    : "bg-white border"
-                }`}
-              >
-                {msg.text}
+              <div className="flex flex-col max-w-xs">
+                {/* ✅ Sender label (only show for admin messages OR all messages if you want) */}
+                <div className="text-xs text-gray-500 mb-1 px-1">
+                  {msg.sender === "admin"
+                    ? `Admin #${msg.senderName}`
+                    : `User #${msg.senderName}`}
+                </div>
+
+                {/* Message bubble */}
+                <div
+                  className={`px-4 py-2 rounded-xl ${
+                    msg.sender === "admin"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white border"
+                  }`}
+                >
+                  {msg.text}
+                </div>
               </div>
             </div>
           ))}
@@ -197,10 +185,7 @@ function AdminRealAgent() {
         </div>
 
         {/* INPUT */}
-        <form
-          onSubmit={handleSendMessage}
-          className="p-4 border-t flex gap-3"
-        >
+        <form onSubmit={handleSendMessage} className="p-4 border-t flex gap-3">
           <input
             className="flex-1 border rounded-xl px-4 py-2"
             value={inputValue}
@@ -212,7 +197,6 @@ function AdminRealAgent() {
             Send
           </button>
         </form>
-
       </div>
     </div>
   );
