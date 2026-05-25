@@ -19,6 +19,7 @@ class ComplaintCategory extends Model
     protected $fillable = [
         'name',
         'description',
+        'synonyms',
         'is_active',
     ];
 
@@ -31,6 +32,7 @@ class ComplaintCategory extends Model
     {
         return [
             'is_active' => 'boolean',
+            'synonyms'  => 'array',
         ];
     }
 

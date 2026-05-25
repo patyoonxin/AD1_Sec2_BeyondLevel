@@ -26,7 +26,8 @@ function AdminCategories() {
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({ name: '', description: '', is_active: true });
+  const [formData, setFormData] = useState({ name: '', description: '', synonyms: [], is_active: true });
+  const [synonymInput, setSynonymInput] = useState('');
   const [saving, setSaving] = useState(false);
   const [nameError, setNameError] = useState('');
   const [saveError, setSaveError] = useState('');
@@ -56,7 +57,8 @@ function AdminCategories() {
 
   const openAdd = () => {
     setEditingId(null);
-    setFormData({ name: '', description: '', is_active: true });
+    setFormData({ name: '', description: '', synonyms: [], is_active: true });
+    setSynonymInput('');
     setNameError('');
     setSaveError('');
     setModalOpen(true);
@@ -67,8 +69,10 @@ function AdminCategories() {
     setFormData({
       name: category.name || '',
       description: category.description || '',
+      synonyms: Array.isArray(category.synonyms) ? category.synonyms : [],
       is_active: category.is_active ?? true,
     });
+    setSynonymInput('');
     setNameError('');
     setSaveError('');
     setModalOpen(true);
@@ -218,6 +222,45 @@ function AdminCategories() {
                     border: '1px solid #d3d1c7', fontSize: 13, outline: 'none', resize: 'vertical',
                   }}
                 />
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 500, marginBottom: 4, color: '#555450' }}>
+                  {t('synonyms', 'AI Synonyms')}
+                </label>
+                <p style={{ margin: '0 0 6px', fontSize: 11, color: '#888' }}>
+                  {t('synonyms_hint', 'Press Enter or comma to add.')}
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, padding: '6px 8px', border: '1px solid #d3d1c7', borderRadius: 6, minHeight: 36 }}>
+                  {formData.synonyms.map((syn, i) => (
+                    <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#e8f0fe', color: '#1a4fa0', borderRadius: 4, padding: '2px 8px', fontSize: 12 }}>
+                      {syn}
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, synonyms: formData.synonyms.filter((_, idx) => idx !== i) })}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1a4fa0', fontWeight: 700, fontSize: 13, lineHeight: 1, padding: 0 }}
+                      >×</button>
+                    </span>
+                  ))}
+                  <input
+                    type="text"
+                    value={synonymInput}
+                    onChange={(e) => setSynonymInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ',') {
+                        e.preventDefault();
+                        const val = synonymInput.trim().replace(/,$/, '');
+                        if (val && !formData.synonyms.includes(val)) {
+                          setFormData({ ...formData, synonyms: [...formData.synonyms, val] });
+                        }
+                        setSynonymInput('');
+                      } else if (e.key === 'Backspace' && !synonymInput && formData.synonyms.length) {
+                        setFormData({ ...formData, synonyms: formData.synonyms.slice(0, -1) });
+                      }
+                    }}
+                    placeholder={formData.synonyms.length === 0 ? t('synonyms_placeholder', 'e.g. Jalan Rosak, Kerosakan Jalan') : ''}
+                    style={{ border: 'none', outline: 'none', fontSize: 13, flex: 1, minWidth: 120, background: 'transparent' }}
+                  />
+                </div>
               </div>
               <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <input

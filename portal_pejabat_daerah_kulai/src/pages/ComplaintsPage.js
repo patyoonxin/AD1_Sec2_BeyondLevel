@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { complaintAPI, categoryAPI } from '../services/api';
 import { useTranslation } from '../lang/i18n';
 
@@ -21,6 +21,47 @@ function ComplaintsPage() {
   const [isDragOver, setIsDragOver] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({ title: false, category: false, description: false, location: false });
   const [showEmptyBanner, setShowEmptyBanner] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [aiError, setAiError] = useState('');
+  const debounceRef = useRef(null);
+
+  // Debounced AI category suggestion when description changes
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    const desc = formData.description.trim();
+    if (desc.length < 20) {
+      setAiSuggestion(null);
+      setIsAnalyzing(false);
+      return;
+    }
+    setAiError('');
+    debounceRef.current = setTimeout(async () => {
+      setIsAnalyzing(true);
+      try {
+        const res = await complaintAPI.suggestCategory(desc);
+        const raw = res.data.category || null;
+        if (raw) {
+          const matched = categories.find(
+            (c) => c.name.toLowerCase() === raw.toLowerCase()
+          );
+          setAiSuggestion(matched ? matched.name : raw);
+        } else {
+          setAiSuggestion(null);
+        }
+        setAiError('');
+      } catch (err) {
+        setAiSuggestion(null);
+        const isRateLimit = err.message && err.message.toLowerCase().includes('rate limit');
+        setAiError(isRateLimit
+          ? t('ai_rate_limit', 'AI rate limit reached. Please wait a moment.')
+          : t('ai_service_unavailable', 'AI Categorisation Service Unavailable'));
+      } finally {
+        setIsAnalyzing(false);
+      }
+    }, 3000);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [formData.description, categories]);
 
   // Search & filter state for the complaint tracking module
   const [searchTerm, setSearchTerm] = useState('');
@@ -115,6 +156,9 @@ function ComplaintsPage() {
       setFormData({ title: '', category: '', description: '', location: '', attachment: null });
       setFieldErrors({ title: false, category: false, description: false, location: false });
       setShowEmptyBanner(false);
+      setAiSuggestion(null);
+      setIsAnalyzing(false);
+      setAiError('');
       setShowForm(false);
 
       // Refresh complaints list
@@ -343,25 +387,6 @@ function ComplaintsPage() {
                 )}
               </div>
 
-              {/* Category */}
-              <div className="form-group">
-                <label className="form-label">{t('category', 'Category')} <span className="text-red-500">*</span></label>
-                <select
-                  value={formData.category}
-                  onChange={(e) => { setFormData({ ...formData, category: e.target.value }); setFieldErrors((p) => ({ ...p, category: false })); setShowEmptyBanner(false); }}
-                  className="form-select"
-                  style={fieldErrors.category ? { borderColor: '#ef4444' } : undefined}
-                >
-                  <option value="">{t('select_category', 'Select a category')}</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.name}>{cat.name}</option>
-                  ))}
-                </select>
-                {fieldErrors.category && (
-                  <p className="text-red-500 text-xs mt-1">{t('field_required', 'This field is required')}</p>
-                )}
-              </div>
-
               {/* Description */}
               <div className="form-group">
                 <label className="form-label">{t('description', 'Description')} <span className="text-red-500">*</span></label>
@@ -375,6 +400,50 @@ function ComplaintsPage() {
                 ></textarea>
                 {fieldErrors.description && (
                   <p className="text-red-500 text-xs mt-1">{t('field_required', 'This field is required')}</p>
+                )}
+              </div>
+
+              {/* Category */}
+              <div className="form-group">
+                <label className="form-label">
+                  {t('category', 'Category')} <span className="text-red-500">*</span>
+                  {isAnalyzing && (
+                    <span className="ml-2 inline-flex items-center gap-1 text-xs font-normal text-blue-500">
+                      <span className="inline-block w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></span>
+                      {t('analyzing', 'Analyzing...')}
+                    </span>
+                  )}
+                </label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => { setFormData({ ...formData, category: e.target.value }); setFieldErrors((p) => ({ ...p, category: false })); setShowEmptyBanner(false); setAiSuggestion(null); }}
+                  className="form-select"
+                  style={fieldErrors.category ? { borderColor: '#ef4444' } : undefined}
+                >
+                  <option value="">{t('select_category', 'Select a category')}</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.name}>{cat.name}</option>
+                  ))}
+                </select>
+                {fieldErrors.category && (
+                  <p className="text-red-500 text-xs mt-1">{t('field_required', 'This field is required')}</p>
+                )}
+                {aiSuggestion && !isAnalyzing && (
+                  <p
+                    className="text-xs mt-1.5 text-blue-600 cursor-pointer hover:text-blue-800 hover:underline transition-colors inline-flex items-center gap-1"
+                    onClick={() => {
+                      setFormData((prev) => ({ ...prev, category: aiSuggestion }));
+                      setFieldErrors((p) => ({ ...p, category: false }));
+                      setAiSuggestion(null);
+                    }}
+                  >
+                    {t('ai_suggestion', 'Suggestion')}: <span className="font-semibold">{aiSuggestion}</span>
+                  </p>
+                )}
+                {aiError && !isAnalyzing && (
+                  <p className="text-xs mt-1.5 text-amber-600 inline-flex items-center gap-1">
+                    <span>&#9888;</span> {aiError}
+                  </p>
                 )}
               </div>
 

@@ -59,6 +59,9 @@ Route::delete('/faq/{id}', [FaqController::class, 'destroy']);
         // Search and filter the authenticated user's complaints
         Route::get('/search', [UserComplaintController::class, 'search']);
 
+        // AI-powered category suggestion using Gemini
+        Route::post('/suggest-category', [UserComplaintController::class, 'suggestCategory']);
+
         // View full details of a specific user-owned complaint
         Route::get('/{id}', [UserComplaintController::class, 'show']);
     });
