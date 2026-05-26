@@ -117,8 +117,8 @@ function AdminDashboard() {
     monthlyBreakdown.length > 0
       ? monthlyBreakdown.slice(-6).map((d) => ({
           month: d.month ? d.month.split(" ")[0] : "",
-          received: d.count || 0,
-          resolved: 0,
+          received: d.received ?? d.count ?? 0,
+          resolved: d.resolved ?? 0,
         }))
       : Array.from({ length: 6 }, (_, i) => {
           const now = new Date();
