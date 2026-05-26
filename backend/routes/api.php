@@ -116,6 +116,22 @@ Route::prefix('admin/complaint-categories')->group(function () {
 | UC028 Export Analytics Report   : POST /api/admin/analytics/export
 | Summary stats for dashboard     : GET  /api/admin/analytics/summary
 */
+// Dashboard: latest registered users & latest FAQ updates
+Route::get('/admin/users/latest', function () {
+    $users = \App\Models\User::where('role', 'user')
+        ->orderBy('created_at', 'desc')
+        ->limit(5)
+        ->get(['id', 'name', 'email', 'created_at']);
+    return response()->json($users);
+});
+
+Route::get('/admin/faq/latest', function () {
+    $faqs = \App\Models\Faq::orderBy('updated_at', 'desc')
+        ->limit(5)
+        ->get(['id', 'question', 'category', 'updated_at']);
+    return response()->json($faqs);
+});
+
 Route::prefix('admin/analytics')->group(function () {
     Route::get('/summary', [AnalyticsController::class, 'summary']);
     Route::get('/generate', [AnalyticsController::class, 'generate']);
@@ -131,3 +147,5 @@ Route::prefix('admin/analytics')->group(function () {
 Route::get('/admin/chatbot/analyze', [ChatbotAnalyticsController::class, 'analyze']);
 Route::get('/admin/chatbot/interpret', [ChatbotAnalyticsController::class, 'interpretQueries']);
 Route::get('/admin/chatbot/categorize', [ChatbotAnalyticsController::class, 'categorizeQueries']);
+Route::post('/admin/chatbot/generate-faq', [ChatbotAnalyticsController::class, 'generateFaqFromConversations']);
+Route::post('/admin/chatbot/save-faq', [ChatbotAnalyticsController::class, 'saveSelectedFaq']);
