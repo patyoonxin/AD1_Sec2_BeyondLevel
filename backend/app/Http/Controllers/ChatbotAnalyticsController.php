@@ -272,8 +272,9 @@ class ChatbotAnalyticsController extends Controller
         $queries = $userMessages->pluck('message');
         $intents = [];
 
+        $geminiError = null;
         try {
-            $apiKey = env('GEMINI_API_KEY');
+            $apiKey = config('services.gemini.key', env('GEMINI_API_KEY'));
             $msgList = $queries->implode("\n");
 
             $prompt = 'For each of these user messages, write ONE short intent description (max 8 words each).' . "\n"
@@ -282,7 +283,7 @@ class ChatbotAnalyticsController extends Controller
                 . $msgList;
 
             $response = \Illuminate\Support\Facades\Http::timeout(60)->post(
-                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite-preview-06-17:generateContent?key={$apiKey}",
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}",
                 ["contents" => [["parts" => [["text" => $prompt]]]]]
             );
 
@@ -291,9 +292,11 @@ class ChatbotAnalyticsController extends Controller
                 $clean = preg_replace('/```json|```/', '', $text);
                 $decoded = json_decode(trim($clean), true);
                 $intents = is_array($decoded) ? $decoded : [];
+            } else {
+                $geminiError = 'Gemini API error: ' . $response->status() . ' — ' . $response->body();
             }
         } catch (\Exception $e) {
-            // Fallback — intents remain empty, will show '—'
+            $geminiError = 'Exception: ' . $e->getMessage();
         }
 
         // ── Fetch complaint categories for source badge ──────────────────────
@@ -354,6 +357,7 @@ class ChatbotAnalyticsController extends Controller
             'no_data' => false,
             'results' => $results,
             'total' => count($results),
+            'gemini_error' => $geminiError ?? null,
         ]);
     }
 
@@ -434,7 +438,7 @@ class ChatbotAnalyticsController extends Controller
         $batchIntents = [];
         try {
             $batchRes = \Illuminate\Support\Facades\Http::timeout(60)->post(
-                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite-preview-06-17:generateContent?key={$apiKey}",
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}",
                 ["contents" => [["parts" => [["text" => $batchPrompt]]]]]
             );
             if ($batchRes->successful()) {
@@ -480,4 +484,169 @@ class ChatbotAnalyticsController extends Controller
             'total' => count($results),
         ]);
     }
+
+    /**
+     * Generate FAQ entries from chatbot conversations using Gemini AI
+     * and save them directly to the database.
+     */
+    /**
+     * STEP 1: Generate FAQ suggestions from chatbot conversations (no save yet)
+     */
+    public function generateFaqFromConversations(Request $request): JsonResponse
+    {
+        $userMessages = ChatMessage::with('sender')
+            ->whereHas('sender', fn($q) => $q->where('role', 'user'))
+            ->orderBy('id', 'desc')
+            ->limit(30)
+            ->get()
+            ->pluck('message')
+            ->unique()
+            ->values();
+
+        if ($userMessages->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No chatbot conversations found to generate FAQ.',
+            ], 404);
+        }
+
+        $apiKey = env('GEMINI_API_KEY');
+        $msgList = $userMessages->implode("\n");
+
+        $prompt = 'Based on these user messages from a Malaysian district office portal chatbot, generate FAQ entries.' . "\n"
+            . 'Reply ONLY as a valid JSON array, no extra text, no markdown.' . "\n"
+            . 'Each item must have these exact keys: question_eng, answer_eng, question_malay, answer_malay, keywords, category.' . "\n"
+            . 'category must be one of: Infrastruktur, Kebersihan, Lesen, Keselamatan, Umum.' . "\n"
+            . 'keywords: comma-separated relevant words (max 5).' . "\n"
+            . 'answers should be helpful and professional.' . "\n"
+            . 'Generate max 5 FAQ entries only for the most common/relevant topics.' . "\n\n"
+            . 'User messages:' . "\n" . $msgList;
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(60)->post(
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}",
+                ["contents" => [["parts" => [["text" => $prompt]]]]]
+            );
+
+            if (!$response->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gemini API error: ' . $response->status(),
+                    'detail' => $response->body(),
+                ], 500);
+            }
+
+            $text = $response->json()['candidates'][0]['content']['parts'][0]['text'] ?? '[]';
+            $clean = preg_replace('/```json|```/', '', $text);
+            $decoded = json_decode(trim($clean), true);
+
+            if (!is_array($decoded) || empty($decoded)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'AI returned invalid response. Please try again.',
+                ], 500);
+            }
+
+            // Mark suggestions that already exist in DB (keyword-based check)
+            $existingFaqs = \App\Models\Faq::select('question_eng', 'question_malay', 'keywords', 'category')->get();
+
+            $suggestions = array_map(function ($item) use ($existingFaqs) {
+                $newKeywords = array_map('trim', explode(',', strtolower($item['keywords'] ?? '')));
+                $newCategory = strtolower(trim($item['category'] ?? ''));
+
+                $exists = $existingFaqs->contains(function ($faq) use ($newKeywords, $newCategory) {
+                    $faqCategory = strtolower(trim($faq->category ?? ''));
+
+                    // Same category check
+                    if ($faqCategory !== $newCategory)
+                        return false;
+
+                    // Check keyword overlap (>= 2 common keywords = duplicate)
+                    $faqKeywords = array_map('trim', explode(',', strtolower($faq->keywords ?? '')));
+                    $common = array_intersect($newKeywords, $faqKeywords);
+                    return count($common) >= 2;
+                });
+
+                $item['already_exists'] = $exists;
+                return $item;
+            }, $decoded);
+
+            // Return suggestions only — NOT saved yet
+            return response()->json([
+                'success' => true,
+                'message' => count($suggestions) . ' FAQ suggestions generated. Please select which to save.',
+                'suggestions' => $suggestions,
+                'total' => count($suggestions),
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * STEP 2: Save selected FAQ entries chosen by admin
+     */
+    public function saveSelectedFaq(Request $request): JsonResponse
+    {
+        $selected = $request->input('selected', []);
+
+        if (empty($selected)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No FAQ entries selected.',
+            ], 422);
+        }
+
+        $saved = [];
+        $skipped = [];
+
+        foreach ($selected as $item) {
+            $questionEng = trim($item['question_eng'] ?? '');
+            $questionMalay = trim($item['question_malay'] ?? '');
+
+            // Check duplicate by keyword overlap (same category + >=2 common keywords)
+            $newKeywords = array_map('trim', explode(',', strtolower($item['keywords'] ?? '')));
+            $newCategory = strtolower(trim($item['category'] ?? ''));
+
+            $exists = \App\Models\Faq::where('category', $item['category'] ?? '')
+                ->get()
+                ->contains(function ($faq) use ($newKeywords) {
+                    $faqKeywords = array_map('trim', explode(',', strtolower($faq->keywords ?? '')));
+                    return count(array_intersect($newKeywords, $faqKeywords)) >= 2;
+                });
+
+            if ($exists) {
+                $skipped[] = $questionEng;
+                continue;
+            }
+
+            $faq = \App\Models\Faq::create([
+                'question_eng' => $questionEng,
+                'answer_eng' => $item['answer_eng'] ?? '',
+                'question_malay' => $questionMalay,
+                'answer_malay' => $item['answer_malay'] ?? '',
+                'keywords' => $item['keywords'] ?? '',
+                'category' => $item['category'] ?? 'Umum',
+            ]);
+            $saved[] = $faq;
+        }
+
+        $msg = count($saved) . ' FAQ saved.';
+        if (count($skipped) > 0) {
+            $msg .= ' ' . count($skipped) . ' skipped (already exist in database).';
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $msg,
+            'saved' => $saved,
+            'skipped' => $skipped,
+            'total' => count($saved),
+        ]);
+    }
+
 }
