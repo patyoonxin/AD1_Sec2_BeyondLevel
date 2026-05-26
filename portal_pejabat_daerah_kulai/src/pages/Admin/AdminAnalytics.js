@@ -1101,8 +1101,8 @@ function AdminAnalytics() {
       const data = monthlyBreakdown.slice(-monthRange);
       return data.map((d) => ({
         month: d.month ? d.month.split(" ")[0] : "",
-        received: d.count || 0,
-        resolved: 0, // not available from monthly_breakdown, use 0
+        received: d.received ?? d.count ?? 0,
+        resolved: d.resolved ?? 0,
       }));
     }
     // Fallback: calculate from rows
