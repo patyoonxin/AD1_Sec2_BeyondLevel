@@ -151,6 +151,7 @@ function AdminChatbot() {
   // Expandable category rows
   const [expandedCategory, setExpandedCategory] = useState(null);
 
+  // Generate FAQ state
   // ── UC022: Fetch from DB ──────────────────────────────────────────────────
   const fetchAnalytics = useCallback(async () => {
     setLoading(true);
@@ -215,6 +216,81 @@ function AdminChatbot() {
       setCatLoading(false);
     }
   }, []);
+
+  // ── Generate FAQ from conversations ───────────────────────────────────────
+  const [faqGenLoading, setFaqGenLoading] = React.useState(false);
+  const [faqGenResult, setFaqGenResult] = React.useState(null);
+  const [faqGenError, setFaqGenError] = React.useState("");
+
+  const [faqSelected, setFaqSelected] = React.useState([]);
+  const [faqSaveLoading, setFaqSaveLoading] = React.useState(false);
+  const [faqSaveResult, setFaqSaveResult] = React.useState("");
+
+  const fetchGenerateFaq = async () => {
+    setFaqGenLoading(true);
+    setFaqGenError("");
+    setFaqGenResult(null);
+    setFaqSelected([]);
+    setFaqSaveResult("");
+    try {
+      const res = await fetch(`${API_BASE}/admin/chatbot/generate-faq`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success)
+        throw new Error(json.message || "Failed to generate FAQ.");
+      setFaqGenResult(json);
+      // Pre-select only suggestions that don't already exist in DB
+      setFaqSelected(
+        (json.suggestions || []).reduce((acc, s, i) => {
+          if (!s.already_exists) acc.push(i);
+          return acc;
+        }, []),
+      );
+    } catch (err) {
+      setFaqGenError(err.message);
+    } finally {
+      setFaqGenLoading(false);
+    }
+  };
+
+  const toggleFaqSelect = (idx) => {
+    setFaqSelected((prev) =>
+      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
+    );
+  };
+
+  const saveSelectedFaq = async () => {
+    const suggestions = faqGenResult?.suggestions || [];
+    const selected = suggestions.filter((_, i) => faqSelected.includes(i));
+    if (selected.length === 0) return;
+    setFaqSaveLoading(true);
+    setFaqSaveResult("");
+    try {
+      const res = await fetch(`${API_BASE}/admin/chatbot/save-faq`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ selected }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success)
+        throw new Error(json.message || "Failed to save.");
+      setFaqSaveResult(json.message);
+      setFaqGenResult(null);
+      setFaqSelected([]);
+    } catch (err) {
+      setFaqSaveResult("Error: " + err.message);
+    } finally {
+      setFaqSaveLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchAnalytics();
@@ -843,6 +919,297 @@ function AdminChatbot() {
               ))}
             </tbody>
           </table>
+        )}
+      </Card>
+
+      {/* Generate FAQ from Conversations */}
+      <Card>
+        <SectionHeader
+          title="Generate FAQ from chatbot conversations (AI)"
+          right={
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              {faqGenError && (
+                <span style={{ fontSize: 11, color: "#a32d2d" }}>
+                  ⚠ {faqGenError}
+                </span>
+              )}
+              {faqGenResult && (
+                <Btn
+                  small
+                  onClick={fetchGenerateFaq}
+                  style={{ opacity: faqGenLoading ? 0.6 : 1 }}
+                >
+                  🔄 Regenerate
+                </Btn>
+              )}
+              <Btn
+                primary
+                small
+                onClick={fetchGenerateFaq}
+                style={{
+                  opacity: faqGenLoading ? 0.6 : 1,
+                  background: "#1a4fa0",
+                  display: faqGenResult ? "none" : undefined,
+                }}
+              >
+                {faqGenLoading
+                  ? "⏳ Generating..."
+                  : "🤖 Generate FAQ Suggestions"}
+              </Btn>
+            </div>
+          }
+        />
+
+        {/* Initial state */}
+        {!faqGenResult && !faqGenLoading && !faqGenError && !faqSaveResult && (
+          <div
+            style={{
+              padding: "16px 0",
+              textAlign: "center",
+              color: "#888780",
+              fontSize: 12,
+            }}
+          >
+            Click <strong>"Generate FAQ Suggestions"</strong> — Gemini will
+            analyse chatbot conversations and suggest FAQ entries. You choose
+            which ones to save.
+          </div>
+        )}
+
+        {/* Loading */}
+        {faqGenLoading && (
+          <div
+            style={{
+              padding: "16px 0",
+              textAlign: "center",
+              color: "#aaa",
+              fontSize: 12,
+            }}
+          >
+            Gemini is analysing conversations...
+          </div>
+        )}
+
+        {/* Save success */}
+        {faqSaveResult && !faqGenResult && (
+          <div
+            style={{
+              padding: "10px 12px",
+              background: "#f0f7e6",
+              borderRadius: 8,
+              fontSize: 12,
+              color: "#639922",
+              fontWeight: 600,
+            }}
+          >
+            ✅ {faqSaveResult}
+          </div>
+        )}
+
+        {/* Suggestions with checkboxes */}
+        {faqGenResult && (
+          <div>
+            <div
+              style={{
+                marginBottom: 12,
+                padding: "8px 12px",
+                background: "#f0f5ff",
+                borderRadius: 8,
+                fontSize: 12,
+                color: "#1a4fa0",
+              }}
+            >
+              💡 {faqGenResult.message} — Tick the ones you want to save, then
+              click <strong>"Save Selected"</strong>.
+            </div>
+
+            {/* Select all / deselect all */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                marginBottom: 10,
+                fontSize: 12,
+              }}
+            >
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  cursor: "pointer",
+                  color: "#555",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={
+                    faqSelected.length ===
+                    (faqGenResult.suggestions || []).length
+                  }
+                  onChange={() => {
+                    const all = (faqGenResult.suggestions || []).map(
+                      (_, i) => i,
+                    );
+                    setFaqSelected(
+                      faqSelected.length === all.length ? [] : all,
+                    );
+                  }}
+                />
+                Select all
+              </label>
+              <span style={{ color: "#888780" }}>
+                {faqSelected.length} of{" "}
+                {(faqGenResult.suggestions || []).length} selected
+              </span>
+            </div>
+
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                fontSize: 12,
+              }}
+            >
+              <thead>
+                <tr>
+                  {[
+                    "",
+                    "Category",
+                    "Question (EN)",
+                    "Question (BM)",
+                    "Keywords",
+                  ].map((h) => (
+                    <th
+                      key={h}
+                      style={{
+                        textAlign: "left",
+                        padding: "6px 8px",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: "#888780",
+                        borderBottom: "1px solid #eceae4",
+                      }}
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {(faqGenResult.suggestions || []).map((f, i) => (
+                  <tr
+                    key={i}
+                    onClick={() => toggleFaqSelect(i)}
+                    style={{
+                      borderBottom:
+                        i < faqGenResult.suggestions.length - 1
+                          ? "1px solid #f1efe8"
+                          : "none",
+                      background: faqSelected.includes(i)
+                        ? "#f0f7e6"
+                        : "transparent",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <td style={{ padding: "8px", width: 32 }}>
+                      <input
+                        type="checkbox"
+                        checked={faqSelected.includes(i)}
+                        onChange={() => toggleFaqSelect(i)}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </td>
+                    <td
+                      style={{
+                        padding: "8px",
+                        color: "#1a4fa0",
+                        fontWeight: 600,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {f.category}
+                      {f.already_exists && (
+                        <span
+                          style={{
+                            marginLeft: 6,
+                            fontSize: 9,
+                            background: "#f5c6c6",
+                            color: "#a32d2d",
+                            borderRadius: 4,
+                            padding: "2px 5px",
+                            fontWeight: 600,
+                          }}
+                        >
+                          DUPLICATE
+                        </span>
+                      )}
+                    </td>
+                    <td
+                      style={{
+                        padding: "8px",
+                        color: f.already_exists ? "#aaa" : "#333",
+                      }}
+                    >
+                      {f.question_eng}
+                    </td>
+                    <td
+                      style={{
+                        padding: "8px",
+                        color: f.already_exists ? "#aaa" : "#555",
+                      }}
+                    >
+                      {f.question_malay}
+                    </td>
+                    <td
+                      style={{ padding: "8px", color: "#888780", fontSize: 11 }}
+                    >
+                      {f.keywords}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Save button */}
+            <div
+              style={{
+                marginTop: 14,
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 8,
+                alignItems: "center",
+              }}
+            >
+              {faqSaveResult && (
+                <span
+                  style={{
+                    fontSize: 11,
+                    color: faqSaveResult.startsWith("Error")
+                      ? "#a32d2d"
+                      : "#639922",
+                  }}
+                >
+                  {faqSaveResult}
+                </span>
+              )}
+              <Btn
+                primary
+                small
+                onClick={saveSelectedFaq}
+                style={{
+                  opacity: faqSaveLoading || faqSelected.length === 0 ? 0.5 : 1,
+                  background: "#639922",
+                  pointerEvents: faqSelected.length === 0 ? "none" : undefined,
+                }}
+              >
+                {faqSaveLoading
+                  ? "⏳ Saving..."
+                  : `💾 Save Selected (${faqSelected.length})`}
+              </Btn>
+            </div>
+          </div>
         )}
       </Card>
     </div>
