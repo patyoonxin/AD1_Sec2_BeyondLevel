@@ -57,12 +57,14 @@ class AnalyticsController extends Controller
         $monthly = [];
         for ($i = 11; $i >= 0; $i--) {
             $month = Carbon::now()->subMonths($i);
-            $count = $complaints->filter(function ($c) use ($month) {
+            $monthComplaints = $complaints->filter(function ($c) use ($month) {
                 return Carbon::parse($c->created_at)->format('Y-m') === $month->format('Y-m');
-            })->count();
+            });
             $monthly[] = [
                 'month' => $month->format('M Y'),
-                'count' => $count,
+                'count' => $monthComplaints->count(),
+                'received' => $monthComplaints->count(),
+                'resolved' => $monthComplaints->where('status', 'Resolved')->count(),
             ];
         }
 
