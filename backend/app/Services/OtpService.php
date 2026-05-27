@@ -8,78 +8,88 @@ use Twilio\Rest\Client;
 
 class OtpService
 {
+    protected $client;
+    protected $from;
+
+    public function __construct()
+    {
+        $this->client = new Client(
+            env('TWILIO_SID'),
+            env('TWILIO_TOKEN')
+        );
+
+        $this->from = env('TWILIO_FROM');
+    }
+
     // 🔹 Generate OTP
     public function generateOtp($phone)
     {
-        $otp = rand(100000, 999999);
+    $otp = rand(100000, 999999);
 
-        Otp::updateOrCreate(
-            ['phone_number' => $phone],
-            [
-                'otp' => $otp,
-                'expires_at' => Carbon::now()->addMinutes(5)
-            ]
-        );
+    Otp::updateOrCreate(
+        ['phone_number' => $phone],
+        [
+            'otp' => $otp,
+            'expires_at' => Carbon::now()->addMinutes(5)
+        ]
+    );
 
-        // SEND SMS HERE 👇
-        $this->sendSms($phone, $otp);
+    $this->sendSms($phone, "Your OTP code is: $otp");
 
+    logger("OTP for $phone is $otp");
 
-        return $otp;
+    return $otp;
     }
+    // 🔹 Send SMS
+    public function sendSms($to, $message)
+{
+    try {
+        logger("Sending SMS to $to: $message");
 
-    // 🔹 Send OTP
-    public function sendSms($phone, $otp)
-    {
-        logger("Sending OTP $otp to $phone");
+        return $this->client->messages->create($to, [
+            'from' => $this->from,
+            'body' => $message
+        ]);
 
-        $sid = env('TWILIO_SID');
-        $token = env('TWILIO_TOKEN');
-        $from = env('TWILIO_FROM');
+    } catch (\Exception $e) {
+        logger("Twilio Error: " . $e->getMessage());
 
-        $client = new Client($sid, $token);
-
-        $client->messages->create(
-            $phone,
-            [
-                'from' => $from,
-                'body' => "Your OTP code is: $otp"
-            ]
-        );
-
+        // ❗ prevent crash
+        return false;
     }
+}
 
     // 🔹 Verify OTP
     public function verifyOtp($phone, $otp)
     {
-    $record = Otp::where('phone_number', $phone)->first();
+        $phone = $this->formatPhone($phone);
 
-    if (!$record) {
-        return false;
+        $record = Otp::where('phone_number', $phone)->first();
+
+        if (!$record) {
+            return false;
+        }
+
+        if ($record->otp != $otp) {
+            return false;
+        }
+
+        if (now()->greaterThan($record->expires_at)) {
+            return false;
+        }
+
+        return true;
     }
 
-    if ($record->otp != $otp) {
-        return false;
-    }
-
-    if (now()->greaterThan($record->expires_at)) {
-        return false;
-    }
-
-    return true;
-    }
-
-    
+    // 🔹 Format phone (Malaysia)
     public function formatPhone($phone)
     {
-    $phone = trim($phone);
+        $phone = trim($phone);
 
-    if (str_starts_with($phone, '0')) {
-        $phone = '+60' . substr($phone, 1);
+        if (str_starts_with($phone, '0')) {
+            $phone = '+60' . substr($phone, 1);
+        }
+
+        return $phone;
     }
-
-    return $phone;
-    }
-
-   
 }

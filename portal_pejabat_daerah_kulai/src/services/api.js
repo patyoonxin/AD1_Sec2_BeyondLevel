@@ -56,6 +56,20 @@ export const authAPI = {
   changePassword: async (data) => {
     // For JSON DB, just acknowledge (not persisted)
     return { data: { message: 'Password changed successfully' } };
+  },
+
+  sendOtp: async (phoneNo) => {
+  return axios.post("http://127.0.0.1:8000/api/send-otp", {
+    phone_number: phoneNo
+  });
+  },
+
+  resetPassword: async (data) => {
+  return axios.post("http://127.0.0.1:8000/api/reset-password", {
+    phone: data.phone,
+    otp: data.otp,
+    password: data.password
+  });
   }
 };
 

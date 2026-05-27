@@ -100,6 +100,17 @@ function Login({ setUser }) {
               </label>
             </div>
 
+            {/* Forgot Password */}
+            <div className="flex items-center">
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
+                className="ml-2 text-sm text-blue-600 hover:underline"
+                >
+                  Forgot Password?
+                  </button>
+            </div>
+
             {/* Submit */}
             <button
               type="submit"

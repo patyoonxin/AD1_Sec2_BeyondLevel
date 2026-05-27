@@ -12,6 +12,8 @@ import FAQPage from './pages/FAQPage';
 import RealAgent from './pages/RealAgent';
 import VerifyOtp from './pages/VerifyOtp';
 import ProfilePage from './pages/ProfilePage';
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 
 // Existing components
@@ -170,6 +172,25 @@ function App() {
           path="/profile"
           element={
               <ProfilePage />} />
+
+        <Route
+          path="/forgot-password"
+          element={
+            <>
+              <Navbar user={user} setUser={handleSetUser} />
+              <ForgotPassword />
+            </>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <>
+              <Navbar user={user} setUser={handleSetUser} />
+              <ResetPassword />
+            </>
+          }
+        />
 
         {/* ── Admin routes (protected, with AdminLayout sidebar) ────── */}
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
