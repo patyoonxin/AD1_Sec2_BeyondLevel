@@ -48,4 +48,26 @@ class UserService
             'user' => $user
         ]);
     }
+
+    public function getAllUsers()
+    {
+    return \App\Models\User::all()->map(function ($user) {
+
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'phone_number' => $user->phone_number,
+
+            'role' => $user->role,
+
+            'status' => $user->email_verified_at ? 'Active' : 'Inactive',
+
+            'registered' => optional($user->created_at)->format('d M Y'),
+
+            'initials' => collect(explode(' ', $user->name))
+                ->map(fn($n) => strtoupper(substr($n, 0, 1)))
+                ->implode('')
+        ];
+    });
+    }
 }

@@ -48,6 +48,8 @@
     Route::get('/admin/profile', [AdminProfileController::class, 'show']);
     Route::put('/admin/profile', [AdminProfileController::class, 'update']);
     Route::post('/admin/change-password', [AdminProfileController::class, 'changePassword']);
+    Route::get('/admin/users', [AdminUserController::class, 'index']);
+    Route::patch('/admin/users/{id}/role', [AdminUserController::class, 'updateRole']);
     
     //Forgot password routes
     Route::post('/forgot-password/send-otp', [ForgotPasswordController::class, 'sendOtp']);
