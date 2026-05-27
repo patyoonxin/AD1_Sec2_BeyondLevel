@@ -241,7 +241,7 @@ function AdminDashboard() {
                       display: "inline-block",
                     }}
                   />
-                  Diselesaikan
+                  Resolved
                 </span>
               </div>
             }

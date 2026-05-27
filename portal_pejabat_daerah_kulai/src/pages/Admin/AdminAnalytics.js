@@ -1371,19 +1371,19 @@ function AdminAnalytics() {
         <MetricCard
           label="Resolution rate"
           value={loading ? "…" : `${resolutionRate}%`}
-          sub={`${resolved} diselesaikan`}
+          sub={`${resolved} resolved`}
           subColor="up"
         />
         <MetricCard
           label="In progress"
           value={loading ? "…" : inProgress}
-          sub={`${pending} belum diproses`}
+          sub={`${pending} pending`}
           subColor={pending > 0 ? "down" : "neu"}
         />
         <MetricCard
           label="Reports exported"
           value={lastExport ? "1+" : "0"}
-          sub={lastExport ? lastExport.time : "Belum ada eksport"}
+          sub={lastExport ? lastExport.time : "No exports yet"}
         />
       </div>
 
