@@ -130,7 +130,7 @@ function Login({ setUser }) {
 
           {/* Admin hint */}
           <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg text-sm text-blue-700">
-            <strong>Admin login:</strong> admin@kulai.gov.my &nbsp;/&nbsp; admin123
+            <strong>Admin login:</strong> 0111111111 &nbsp;/&nbsp; admin123
           </div>
 
           <div className="divider"></div>

@@ -66,7 +66,7 @@ export const authAPI = {
 
   resetPassword: async (data) => {
   return axios.post("http://127.0.0.1:8000/api/reset-password", {
-    phone: data.phone,
+    phone_number: data.phone_number,
     otp: data.otp,
     password: data.password
   });

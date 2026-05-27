@@ -11,6 +11,7 @@
     use App\Http\Controllers\ProfileController;
     use App\Http\Controllers\AdminUserController;
     use App\Http\Controllers\ForgotPasswordController;
+    use App\Http\Controllers\AdminProfileController;
 
     //Faq routes
     Route::get('/faq', [FaqController::class, 'index']);
@@ -42,9 +43,12 @@
     Route::middleware('auth:sanctum')->put('/profile/email', [ProfileController::class, 'updateEmail']);
     Route::middleware('auth:sanctum')->post('/change-password', [ProfileController::class, 'changePassword']);
     
-    //Admin user routess
+    //Admin user routes
     Route::put('/admin/users/{id}/role', [AdminUserController::class, 'updateRole']);
-
+    Route::get('/admin/profile', [AdminProfileController::class, 'show']);
+    Route::put('/admin/profile', [AdminProfileController::class, 'update']);
+    Route::post('/admin/change-password', [AdminProfileController::class, 'changePassword']);
+    
     //Forgot password routes
-    Route::post('auth/forgot-password/send-otp', [ForgotPasswordController::class, 'sendOtp']);
-    Route::post('auth/forgot-password/reset', [ForgotPasswordController::class, 'resetPassword']);
+    Route::post('/forgot-password/send-otp', [ForgotPasswordController::class, 'sendOtp']);
+    Route::post('/forgot-password/reset', [ForgotPasswordController::class, 'resetPassword']);

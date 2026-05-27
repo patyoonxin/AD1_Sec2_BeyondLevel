@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const NAV_ITEMS = [
   {
@@ -17,6 +17,8 @@ const NAV_ITEMS = [
       { path: '/admin/users',       label: 'User Management',       icon: 'users' },
       { path: '/admin/faq',         label: 'FAQs & Knowledge Base', icon: 'faq' },
       { path: '/admin/analytics',   label: 'Analytics & Reports',   icon: 'analytics' },
+      { path: '/admin/profile',     label: 'My Profile',            icon: 'profile' },
+
     ],
   },
 ];
@@ -63,12 +65,19 @@ function NavIcon({ name }) {
         <path d="M2 12L6 8l3 3 5-6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
+    profile: (
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.3" />
+        <path d="M2 13c0-2.761 2.686-5 6-5s6 2.239 6 5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      </svg>
+    ),
   };
   return icons[name] || null;
 }
 
 function AdminLayout({ children }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isActive = (path) => location.pathname === path;
@@ -166,14 +175,24 @@ function AdminLayout({ children }) {
         {/* Admin user */}
         <div style={{ padding: '14px 20px', borderTop: '1px solid #eceae4' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: '50%',
-              background: '#1a4fa0', color: '#c8ddf5',
-              fontSize: 11, fontWeight: 600,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              AM
-            </div>
+            <div
+            onClick={() => navigate('/admin/profile')}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: '50%',
+              background: '#1a4fa0',
+              color: '#c8ddf5',
+              fontSize: 11,
+              fontWeight: 600, 
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              }}
+              >
+                AM
+              </div>
             <div>
               <div style={{ fontSize: 12, fontWeight: 600, color: '#1a1a1a' }}>Ahmad Mazlan</div>
               <div style={{ fontSize: 10, color: '#aaa89e' }}>Super Admin</div>
@@ -230,6 +249,8 @@ function AdminLayout({ children }) {
             }}>
               AM
             </div>
+
+            
           </div>
         </header>
 
