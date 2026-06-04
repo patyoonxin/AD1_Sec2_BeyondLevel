@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import axios from "axios";
+
 
 const NAV_ITEMS = [
   {
@@ -78,6 +80,26 @@ function NavIcon({ name }) {
 function AdminLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+
+  const getInitials = (name) => {
+    if (!name) return "";
+    return name
+      .split(" ")
+      .map(word => word[0])
+      .join("")
+      .toUpperCase();
+  };
+
+  useEffect(() => {
+    axios.get("http://127.0.0.1:8000/api/profile", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+      }
+    })
+    .then(res => setUser(res.data.data))
+    .catch(err => console.error(err));
+  }, []);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isActive = (path) => location.pathname === path;
@@ -173,32 +195,39 @@ function AdminLayout({ children }) {
         </nav>
 
         {/* Admin user */}
-        <div style={{ padding: '14px 20px', borderTop: '1px solid #eceae4' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div
-            onClick={() => navigate('/admin/profile')}
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: '50%',
-              background: '#1a4fa0',
-              color: '#c8ddf5',
-              fontSize: 11,
-              fontWeight: 600, 
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              }}
-              >
-                AM
-              </div>
-            <div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: '#1a1a1a' }}>Ahmad Mazlan</div>
-              <div style={{ fontSize: 10, color: '#aaa89e' }}>Super Admin</div>
-            </div>
-          </div>
-        </div>
+<div style={{ padding: '14px 20px', borderTop: '1px solid #eceae4' }}>
+  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+    
+    <div
+      onClick={() => navigate('/admin/profile')}
+      style={{
+        width: 32,
+        height: 32,
+        borderRadius: '50%',
+        background: '#1a4fa0',
+        color: '#c8ddf5',
+        fontSize: 11,
+        fontWeight: 600,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+      }}
+    >
+      {getInitials(user?.name) || "..." }
+    </div>
+
+    <div>
+      <div style={{ fontSize: 12, fontWeight: 600, color: '#1a1a1a' }}>
+        {user?.name || "Loading..."}
+      </div>
+      <div style={{ fontSize: 10, color: '#aaa89e' }}>
+        {user?.role || "—"}
+      </div>
+    </div>
+
+  </div>
+</div>
       </aside>
 
       {/* ── Main ────────────────────────────────────────────────── */}
@@ -247,7 +276,7 @@ function AdminLayout({ children }) {
               fontSize: 11, fontWeight: 600,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              AM
+              {getInitials(user?.name) || "..."}
             </div>
 
             

@@ -18,6 +18,8 @@ function AdminUsers() {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   const menuItemStyle = {
     padding: '8px 10px',
@@ -49,6 +51,8 @@ function AdminUsers() {
     return () => window.removeEventListener('click', close);
   }, []);
 
+  
+
   // ================= CHANGE ROLE =================
   const handleChangeRole = async (user) => {
     try {
@@ -76,6 +80,64 @@ function AdminUsers() {
     }
   };
 
+  // ================= EDIT USER =================
+  const handleEditUser = (user) => {
+  setSelectedUser({
+    ...user,
+  });
+
+  setShowEditModal(true);
+  setOpenDropdown(null);
+};
+  // ================= DELETE USER =================
+  const handleDeleteUser = async (userId) => {
+  try {
+    await axios.delete(
+      `http://127.0.0.1:8000/api/admin/users/${userId}`
+    );
+
+    setUsers(prev =>
+      prev.filter(u => u.id !== userId)
+    );
+
+    setOpenDropdown(null);
+
+    alert('User deleted successfully');
+  } catch (error) {
+    console.error(error);
+    alert('Failed to delete user');
+  }
+};
+
+  // ================= SAVE USER =================
+const handleSaveUser = async () => {
+  try {
+    const response = await axios.put(
+      `http://127.0.0.1:8000/api/admin/users/${selectedUser.id}`,
+      {
+        name: selectedUser.name,
+        email: selectedUser.email,
+        role: selectedUser.role,
+      }
+    );
+
+    setUsers(prev =>
+      prev.map(user =>
+        user.id === selectedUser.id
+          ? response.data.user
+          : user
+      )
+    );
+
+    setShowEditModal(false);
+
+    alert('User updated successfully');
+
+  } catch (error) {
+    console.error(error);
+    alert('Failed to update user');
+  }
+};
   // ================= FILTER =================
   const filtered = users.filter((u) =>
     u.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -90,7 +152,18 @@ function AdminUsers() {
       label: 'User',
       render: (v, row) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Avatar initials={row.initials} size={30} />
+          <Avatar
+          initials={
+            row.name
+            ? row.name
+            .split(' ')
+            .map(word => word[0])
+            .join('')
+            .toUpperCase()
+            : 'U'
+          }
+          size={30}
+          />
           <div>
             <div style={{ fontSize: 12, fontWeight: 600 }}>{v}</div>
             <div style={{ fontSize: 10, color: '#aaa89e' }}>
@@ -184,14 +257,14 @@ function AdminUsers() {
 
                 <div
                   style={menuItemStyle}
-                  onClick={() => alert(`Edit ${row.name}`)}
+                  onClick={() => handleEditUser(row)}
                 >
                   ✏️ Edit
                 </div>
 
                 <div
                   style={menuItemStyle}
-                  onClick={() => alert(`Delete ${row.name}`)}
+                  onClick={() => handleDeleteUser(row.id)}
                 >
                   🗑 Delete
                 </div>
@@ -205,6 +278,124 @@ function AdminUsers() {
 
               </div>
             )}
+            {showEditModal && selectedUser && (
+  <div
+    style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0,0,0,0.4)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 9999,
+    }}
+  >
+    <div
+      style={{
+        background: '#fff',
+        width: 450,
+        borderRadius: 12,
+        padding: 24,
+        boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+      }}
+    >
+      <h3
+        style={{
+          marginTop: 0,
+          marginBottom: 20,
+        }}
+      >
+        Edit User
+      </h3>
+
+      <div style={{ marginBottom: 12 }}>
+        <label>Name</label>
+
+        <input
+          type="text"
+          value={selectedUser.name || ''}
+          onChange={(e) =>
+            setSelectedUser({
+              ...selectedUser,
+              name: e.target.value,
+            })
+          }
+          style={{
+            width: '100%',
+            padding: 10,
+            marginTop: 4,
+          }}
+        />
+      </div>
+
+      <div style={{ marginBottom: 12 }}>
+        <label>Email</label>
+
+        <input
+          type="email"
+          value={selectedUser.email || ''}
+          onChange={(e) =>
+            setSelectedUser({
+              ...selectedUser,
+              email: e.target.value,
+            })
+          }
+          style={{
+            width: '100%',
+            padding: 10,
+            marginTop: 4,
+          }}
+        />
+      </div>
+
+      <div style={{ marginBottom: 20 }}>
+        <label>Role</label>
+
+        <select
+          value={selectedUser.role || 'user'}
+          onChange={(e) =>
+            setSelectedUser({
+              ...selectedUser,
+              role: e.target.value,
+            })
+          }
+          style={{
+            width: '100%',
+            padding: 10,
+            marginTop: 4,
+          }}
+        >
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          gap: 10,
+        }}
+      >
+        <Btn
+          onClick={() => setShowEditModal(false)}
+        >
+          Cancel
+        </Btn>
+
+        <Btn
+          primary
+          onClick={handleSaveUser}
+        >
+          Save Changes
+        </Btn>
+      </div>
+    </div>
+  </div>
+)}
           </div>
         );
       },
@@ -271,6 +462,264 @@ function AdminUsers() {
         </div>
 
       </Card>
+
+      {showEditModal && selectedUser && (
+  <div
+    style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(15, 23, 42, 0.45)',
+      backdropFilter: 'blur(3px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 9999,
+    }}
+  >
+    <div
+      style={{
+        background: '#fff',
+        width: '500px',
+        maxWidth: '90%',
+        borderRadius: '16px',
+        padding: '24px',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
+        border: '1px solid #eceae4',
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 24,
+          paddingBottom: 12,
+          borderBottom: '1px solid #eceae4',
+        }}
+      >
+        <div>
+          <h3
+            style={{
+              margin: 0,
+              fontSize: 18,
+              fontWeight: 600,
+              color: '#1a1a1a',
+            }}
+          >
+            Edit User
+          </h3>
+
+          <p
+            style={{
+              margin: '4px 0 0',
+              fontSize: 12,
+              color: '#888780',
+            }}
+          >
+            Update user information and role
+          </p>
+        </div>
+
+        <button
+          onClick={() => setShowEditModal(false)}
+          style={{
+            border: 'none',
+            background: 'transparent',
+            cursor: 'pointer',
+            fontSize: 22,
+            color: '#888780',
+          }}
+        >
+          ×
+        </button>
+      </div>
+
+      {/* User Preview */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          marginBottom: 20,
+          padding: '12px',
+          background: '#f8f7f4',
+          borderRadius: 10,
+        }}
+      >
+        <div
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: '50%',
+            background: '#1a4fa0',
+            color: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: 600,
+          }}
+        >
+          {selectedUser.name
+            ?.split(' ')
+            .map(word => word[0])
+            .join('')
+            .toUpperCase()}
+        </div>
+
+        <div>
+          <div style={{ fontWeight: 600 }}>
+            {selectedUser.name}
+          </div>
+
+          <div
+            style={{
+              fontSize: 12,
+              color: '#888780',
+            }}
+          >
+            User ID: {selectedUser.id}
+          </div>
+        </div>
+      </div>
+
+      {/* Name */}
+      <div style={{ marginBottom: 16 }}>
+        <label
+          style={{
+            display: 'block',
+            marginBottom: 6,
+            fontSize: 13,
+            fontWeight: 500,
+          }}
+        >
+          Name
+        </label>
+
+        <input
+          type="text"
+          value={selectedUser.name || ''}
+          onChange={(e) =>
+            setSelectedUser({
+              ...selectedUser,
+              name: e.target.value,
+            })
+          }
+          style={{
+            width: '100%',
+            padding: '10px 12px',
+            border: '1px solid #d9d7cf',
+            borderRadius: 8,
+          }}
+        />
+      </div>
+
+      {/* Email */}
+      <div style={{ marginBottom: 16 }}>
+        <label
+          style={{
+            display: 'block',
+            marginBottom: 6,
+            fontSize: 13,
+            fontWeight: 500,
+          }}
+        >
+          Email
+        </label>
+
+        <input
+          type="email"
+          value={selectedUser.email || ''}
+          onChange={(e) =>
+            setSelectedUser({
+              ...selectedUser,
+              email: e.target.value,
+            })
+          }
+          style={{
+            width: '100%',
+            padding: '10px 12px',
+            border: '1px solid #d9d7cf',
+            borderRadius: 8,
+          }}
+        />
+      </div>
+
+      {/* Role */}
+      <div style={{ marginBottom: 20 }}>
+        <label
+          style={{
+            display: 'block',
+            marginBottom: 6,
+            fontSize: 13,
+            fontWeight: 500,
+          }}
+        >
+          Role
+        </label>
+
+        <select
+          value={selectedUser.role || 'user'}
+          onChange={(e) =>
+            setSelectedUser({
+              ...selectedUser,
+              role: e.target.value,
+            })
+          }
+          style={{
+            width: '100%',
+            padding: '10px 12px',
+            border: '1px solid #d9d7cf',
+            borderRadius: 8,
+          }}
+        >
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+
+      {/* Footer */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          gap: 10,
+          marginTop: 24,
+          paddingTop: 16,
+          borderTop: '1px solid #eceae4',
+        }}
+      >
+        <button
+          onClick={() => setShowEditModal(false)}
+          style={{
+            padding: '10px 16px',
+            border: '1px solid #d9d7cf',
+            background: '#fff',
+            borderRadius: 8,
+            cursor: 'pointer',
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={handleSaveUser}
+          style={{
+            padding: '10px 18px',
+            border: 'none',
+            background: '#1a4fa0',
+            color: '#fff',
+            borderRadius: 8,
+            cursor: 'pointer',
+            fontWeight: 600,
+          }}
+        >
+          Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }

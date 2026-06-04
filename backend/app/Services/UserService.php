@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+require_once __DIR__ . '/../models/User.php';
+
 
 class UserService
 {
@@ -68,6 +70,19 @@ class UserService
                 ->map(fn($n) => strtoupper(substr($n, 0, 1)))
                 ->implode('')
         ];
-    });
+        });
+    }
+
+    public function getDashboardStats()
+    {
+        return [
+            'total_users' => User::count(),
+            'admins' => User::whereIn('role', ['admin', 'super_admin'])->count(),
+        ];
+    }
+
+    public static function getProfile($pdo, $userId)
+    {
+        return User::getUserById($pdo, $userId);
     }
 }

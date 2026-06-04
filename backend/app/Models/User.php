@@ -45,4 +45,17 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public static function getUserById($pdo, $id)
+{
+    $stmt = $pdo->prepare("
+        SELECT id, name, email, phone, role
+        FROM users
+        WHERE id = ?
+    ");
+
+    $stmt->execute([$id]);
+
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
 }
