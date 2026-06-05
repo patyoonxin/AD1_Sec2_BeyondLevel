@@ -41,6 +41,31 @@ class AdminUserController extends Controller
     }
 
     /**
+    * CREATE NEW USER
+    */
+    public function store(Request $request)
+    {
+    $validated = $request->validate([
+        'name'         => 'required|string',
+        'email'        => 'nullable|email|unique:users,email',
+        'phone_number' => 'required|string|unique:users,phone_number',
+        'password'     => 'required|string|min:6',
+        'role'         => 'required|string|in:user,admin',
+        
+    ]);
+
+    $validated['password'] = bcrypt($validated['password']);
+    $validated['phone_verified'] = 1; 
+
+    $user = User::create($validated);
+
+    return response()->json([
+        'message' => 'User created successfully',
+        'user'    => $user
+    ], 201);
+    }
+
+    /**
      * UPDATE USER ROLE
      */
     public function updateRole(Request $request, $id)

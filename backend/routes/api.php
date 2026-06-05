@@ -55,6 +55,7 @@
     Route::put('/admin/users/{id}', [AdminUserController::class, 'update']);
     Route::patch('/admin/users/{id}/role', [AdminUserController::class, 'updateRole']);
     Route::delete('/admin/users/{id}', [AdminUserController::class, 'destroy']);
+    Route::middleware('auth:sanctum')->get('/admin/profile', [AdminProfileController::class, 'getProfile']);
     
     // Dashboard stats
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
@@ -62,6 +63,7 @@
     Route::get('/me', [AdminUserController::class, 'me']);
 
     Route::get('/users', [AdminUserController::class, 'index']);
+    Route::post('/admin/users', [AdminUserController::class, 'store']);
     Route::put('/users/{id}', [AdminUserController::class, 'update']);
     Route::patch('/users/{id}/role', [AdminUserController::class, 'updateRole']);
     Route::delete('/users/{id}', [AdminUserController::class, 'destroy']);

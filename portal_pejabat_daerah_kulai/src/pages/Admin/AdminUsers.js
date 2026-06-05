@@ -20,6 +20,8 @@ function AdminUsers() {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newUser, setNewUser] = useState({ name: '', email: '', phone_number: '', password: '', role: 'user' });
 
   const menuItemStyle = {
     padding: '8px 10px',
@@ -51,7 +53,22 @@ function AdminUsers() {
     return () => window.removeEventListener('click', close);
   }, []);
 
-  
+  // ================= ADD USER =================
+  const handleAddUser = async () => {
+  try {
+    const res = await axios.post('http://127.0.0.1:8000/api/admin/users', newUser, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` }
+    });
+    setUsers(prev => [...prev, res.data.user]);
+    setShowAddModal(false);
+    setNewUser({ name: '', email: '', phone_number: '', password: '', role: 'user' });
+    alert('User added successfully');
+  } catch (error) {
+    console.error(error.response?.data);
+    alert('Failed to add user');
+  }
+};
+
 
   // ================= CHANGE ROLE =================
   const handleChangeRole = async (user) => {
@@ -181,41 +198,31 @@ const handleSaveUser = async () => {
     },
 
     {
-      key: 'role',
-      label: 'Role',
-      render: (v) => {
-        const formatted = v.charAt(0).toUpperCase() + v.slice(1);
-        return (
-          <Badge variant={ROLE_BADGE[formatted] || 'gray'}>
-            {formatted}
-          </Badge>
-        );
-      },
-    },
+  key: 'role',
+  label: 'Role',
+  render: (v) => {
+    if (!v) return <Badge variant="gray">Unknown</Badge>;
+    const formatted = v.charAt(0).toUpperCase() + v.slice(1);
+    return <Badge variant={ROLE_BADGE[formatted] || 'gray'}>{formatted}</Badge>;
+  },
+},
 
-    {
-      key: 'registered',
-      label: 'Registered',
-      render: (v) => <span style={{ color: '#888780' }}>{v}</span>,
-    },
+{
+  key: 'registered',
+  label: 'Registered',
+  render: (v) => <span style={{ color: '#888780' }}>{v || '—'}</span>,
+},
 
-    {
-      key: 'status',
-      label: 'Status',
-      render: (v) => (
-        <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <span
-            style={{
-              width: 7,
-              height: 7,
-              borderRadius: '50%',
-              background: v === 'Active' ? '#639922' : '#e24b4a',
-            }}
-          />
-          {v}
-        </span>
-      ),
-    },
+{
+  key: 'status',
+  label: 'Status',
+  render: (v) => (
+    <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+      <span style={{ width: 7, height: 7, borderRadius: '50%', background: v === 'Active' ? '#639922' : '#e24b4a' }} />
+      {v || 'Inactive'}
+    </span>
+  ),
+},
 
     // ================= ACTION DROPDOWN =================
     {
@@ -431,7 +438,7 @@ const handleSaveUser = async () => {
           right={
             <>
               <Btn small>Export</Btn>
-              <Btn small primary>+ Add User</Btn>
+              <Btn small primary onClick={() => setShowAddModal(true)}>+ Add User</Btn>
             </>
           }
         />
@@ -716,6 +723,67 @@ const handleSaveUser = async () => {
         >
           Save Changes
         </button>
+      </div>
+    </div>
+  </div>
+)}
+{showAddModal && (
+  <div style={{
+    position: 'fixed', inset: 0,
+    background: 'rgba(15,23,42,0.45)',
+    backdropFilter: 'blur(3px)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    zIndex: 9999,
+  }}>
+    <div style={{
+      background: '#fff', width: 500, maxWidth: '90%',
+      borderRadius: 16, padding: 24,
+      boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
+      border: '1px solid #eceae4',
+    }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, paddingBottom: 12, borderBottom: '1px solid #eceae4' }}>
+        <div>
+          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: '#1a1a1a' }}>Add User</h3>
+          <p style={{ margin: '4px 0 0', fontSize: 12, color: '#888780' }}>Create a new user account</p>
+        </div>
+        <button onClick={() => setShowAddModal(false)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 22, color: '#888780' }}>×</button>
+      </div>
+
+      {/* Fields */}
+      {[
+        { label: 'Name', key: 'name', type: 'text' },
+        { label: 'Email', key: 'email', type: 'email' },
+        { label: 'Phone Number', key: 'phone_number', type: 'text' },
+        { label: 'Password', key: 'password', type: 'password' },
+      ].map(({ label, key, type }) => (
+        <div key={key} style={{ marginBottom: 16 }}>
+          <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 500 }}>{label}</label>
+          <input
+            type={type}
+            value={newUser[key]}
+            onChange={(e) => setNewUser({ ...newUser, [key]: e.target.value })}
+            style={{ width: '100%', padding: '10px 12px', border: '1px solid #d9d7cf', borderRadius: 8 }}
+          />
+        </div>
+      ))}
+
+      <div style={{ marginBottom: 20 }}>
+        <label style={{ display: 'block', marginBottom: 6, fontSize: 13, fontWeight: 500 }}>Role</label>
+        <select
+          value={newUser.role}
+          onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+          style={{ width: '100%', padding: '10px 12px', border: '1px solid #d9d7cf', borderRadius: 8 }}
+        >
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+
+      {/* Footer */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, paddingTop: 16, borderTop: '1px solid #eceae4' }}>
+        <button onClick={() => setShowAddModal(false)} style={{ padding: '10px 16px', border: '1px solid #d9d7cf', background: '#fff', borderRadius: 8, cursor: 'pointer' }}>Cancel</button>
+        <button onClick={handleAddUser} style={{ padding: '10px 18px', border: 'none', background: '#1a4fa0', color: '#fff', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}>Add User</button>
       </div>
     </div>
   </div>

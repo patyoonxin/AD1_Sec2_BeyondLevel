@@ -25,10 +25,10 @@ function Login({ setUser }) {
       setUser(user);
 
       // Redirect admin users to the admin dashboard
-      if (user.role === 'admin') {
+      if (user.role?.toLowerCase() === 'admin') {
         navigate('/admin/dashboard');
       } else {
-        navigate('/chatbot');
+        navigate('/');
       }
     } catch (err) {
       const errorMessage =

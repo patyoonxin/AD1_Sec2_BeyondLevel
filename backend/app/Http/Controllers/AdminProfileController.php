@@ -68,4 +68,9 @@ class AdminProfileController extends Controller
             'message' => 'Password updated successfully'
         ]);
     }
+
+    public function getProfile(Request $request)
+    {
+    return response()->json($request->user());
+    }
 }

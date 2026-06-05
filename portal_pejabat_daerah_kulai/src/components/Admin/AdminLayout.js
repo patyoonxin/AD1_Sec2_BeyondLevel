@@ -94,10 +94,13 @@ function AdminLayout({ children }) {
   useEffect(() => {
     axios.get("http://127.0.0.1:8000/api/profile", {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
       }
     })
-    .then(res => setUser(res.data.data))
+    .then(res => {
+  console.log(res.data); // check structure
+  setUser(res.data.user ?? res.data.data ?? res.data);
+})
     .catch(err => console.error(err));
   }, []);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -217,7 +220,7 @@ function AdminLayout({ children }) {
       {getInitials(user?.name) || "..." }
     </div>
 
-    <div>
+    <div style={{ flex: 1 }}>
       <div style={{ fontSize: 12, fontWeight: 600, color: '#1a1a1a' }}>
         {user?.name || "Loading..."}
       </div>
@@ -226,6 +229,21 @@ function AdminLayout({ children }) {
       </div>
     </div>
 
+    {/* Logout button */}
+    <div
+      onClick={() => {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('user');
+        window.location.href = '/login'; // hard reload clears all state
+      }}
+      title="Logout"
+      style={{ cursor: 'pointer', color: '#aaa89e', fontSize: 14 }}
+    >
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M11 11l3-3-3-3M14 8H6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </div>
   </div>
 </div>
       </aside>

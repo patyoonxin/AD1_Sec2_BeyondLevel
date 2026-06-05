@@ -1,36 +1,4 @@
 {
-  "users": [
-    {
-      "id": 1,
-      "name": "Ahmad bin Ibrahim",
-      "email": "ahmad.ibrahim@example.com",
-      "phoneNo": "0121234567",
-      "password": "password123",
-      "address": "123 Jalan Merdeka, 82000 Kulai",
-      "created_at": "2026-01-15T10:30:00Z",
-      "role": "user"
-    },
-    {
-      "id": 2,
-      "name": "Siti Nurhaliza",
-      "email": "siti.nurhaliza@example.com",
-      "phoneNo": "0122222222",
-      "password": "password123",
-      "address": "456 Jalan Raja, 82000 Kulai",
-      "created_at": "2026-02-10T14:20:00Z",
-      "role": "user"
-    },
-    {
-      "id": 3,
-      "name": "Admin Kulai",
-      "email": "admin@kulai.gov.my",
-      "phoneNo": "0111111111",
-      "password": "admin123",
-      "address": "Pejabat Daerah Kulai, 82000 Kulai",
-      "created_at": "2025-12-01T08:00:00Z",
-      "role": "admin"
-    }
-  ],
   "complaints": [
     {
       "id": 1,
