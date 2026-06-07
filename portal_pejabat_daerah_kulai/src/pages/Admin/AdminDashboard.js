@@ -229,7 +229,7 @@ function AdminDashboard() {
                       display: "inline-block",
                     }}
                   />
-                  Diterima
+                  Received
                 </span>
                 <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
                   <span
@@ -388,23 +388,7 @@ function AdminDashboard() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         {/* UC026 A1: Chatbot summaries */}
         <Card>
-          <SectionHeader
-            title="Chatbot summary"
-            right={
-              <span
-                style={{
-                  fontSize: 11,
-                  background: "#e8f0fb",
-                  color: "#1a4fa0",
-                  padding: "2px 8px",
-                  borderRadius: 10,
-                  fontWeight: 600,
-                }}
-              >
-                Live
-              </span>
-            }
-          />
+          <SectionHeader title="Chatbot summary" />
           {loading ? (
             <div
               style={{

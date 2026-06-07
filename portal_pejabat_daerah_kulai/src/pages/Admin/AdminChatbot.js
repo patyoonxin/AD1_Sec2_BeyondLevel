@@ -404,10 +404,7 @@ function AdminChatbot() {
         }}
       >
         <Card>
-          <SectionHeader
-            title="Common user questions"
-            right={<Badge variant="info">A2 · A3</Badge>}
-          />
+          <SectionHeader title="Common user questions" />
           {loading ? (
             <div
               style={{
@@ -574,10 +571,7 @@ function AdminChatbot() {
         </Card>
 
         <Card>
-          <SectionHeader
-            title="Chatbot sessions (30 days)"
-            right={<Badge variant="gray">DB</Badge>}
-          />
+          <SectionHeader title="Chatbot sessions (30 days)" />
           {loading ? (
             <div
               style={{
@@ -787,7 +781,7 @@ function AdminChatbot() {
       </Card>
 
       {/* UC024: Categorize user queries using AI */}
-      <Card>
+      <Card style={{ marginBottom: 16 }}>
         <SectionHeader
           title="Categorize user queries using AI"
           right={
