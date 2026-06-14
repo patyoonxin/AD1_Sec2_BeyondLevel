@@ -104,7 +104,7 @@ function Register() {
                 value={formData.phoneNo}
                 onChange={handleChange}
                 className="form-input"
-                placeholder="0123456789"
+                placeholder="+60123456789"
                 required
               />
             </div>

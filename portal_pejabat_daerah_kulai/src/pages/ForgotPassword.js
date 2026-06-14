@@ -45,7 +45,7 @@ export default function ForgotPassword() {
             <label className="form-label">Phone Number</label>
             <input
               type="text"
-              placeholder="0123456789"
+              placeholder="+60123456789"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className="form-input"
