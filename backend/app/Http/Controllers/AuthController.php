@@ -9,6 +9,48 @@ use App\Models\User;
 class AuthController extends Controller
 {
 
+    public function login(Request $request)
+{
+    $isAdmin = $request->has('email'); // admin sends email, user sends phone_number
+
+    if ($isAdmin) {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
+        $user = User::where('email', $request->email)
+                    ->where('role', 'admin')
+                    ->first();
+    } else {
+        $request->validate([
+            'phone_number' => 'required',
+            'password' => 'required'
+        ]);
+        $user = User::where('phone_number', $request->phone_number)->first();
+    }
+
+    if (!$user) {
+        return response()->json(['message' => 'User not found'], 404);
+    }
+
+    if (!\Hash::check($request->password, $user->password)) {
+        return response()->json(['message' => 'Invalid password'], 401);
+    }
+
+    // Skip OTP check for admin
+    if (!$isAdmin && !$user->phone_verified) {
+        return response()->json(['message' => 'Please verify OTP first'], 403);
+    }
+
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'message' => 'Login successful',
+        'user' => $user,
+        'token' => $token
+    ]);
+}
+
     public function register(Request $request)
     {
     $request->validate([
@@ -105,45 +147,5 @@ class AuthController extends Controller
     return response()->json([
         'message' => 'Account verified. You can now login'
     ]);
-    }
-
-    public function login(Request $request)
-    {
-        $request->validate([
-            'phone_number' => 'required',
-            'password' => 'required'
-        ]);
-
-        // STEP 1: find user
-            $user = User::where('phone_number', $request->phone_number)->first();
-
-            if (!$user) {
-                return response()->json([
-                    'message' => 'User not found'
-                ], 404);
-            }
-
-        // STEP 2: check password
-            if (!\Hash::check($request->password, $user->password)) {
-                return response()->json([
-                    'message' => 'Invalid password'
-                ], 401);
-            }
-
-        // STEP 3: check OTP verification
-            if (!$user->phone_verified) {
-                return response()->json([
-                    'message' => 'Please verify OTP first'
-                ], 403);
-            }
-
-        // STEP 4: create token
-            $token = $user->createToken('auth_token')->plainTextToken;
-
-            return response()->json([
-                'message' => 'Login successful',
-                'user' => $user,
-                'token' => $token
-            ]);
     }
 }

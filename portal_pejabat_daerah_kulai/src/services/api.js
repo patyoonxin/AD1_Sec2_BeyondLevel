@@ -12,11 +12,8 @@ import axios from "axios";
 // AUTH ENDPOINTS (JSON Database)
 // ============================================
 export const authAPI = {
-  login: async (phoneNo, password) => {
-    return axios.post("http://127.0.0.1:8000/api/login", {
-      phone_number: phoneNo,
-      password: password
-    });
+  login: async (payload) => {
+    return axios.post("http://127.0.0.1:8000/api/login", payload);
   },
 
    register: async (name, phoneNo, password, password_confirmation) => {

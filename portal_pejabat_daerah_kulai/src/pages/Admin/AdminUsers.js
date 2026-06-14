@@ -22,6 +22,7 @@ function AdminUsers() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newUser, setNewUser] = useState({ name: '', email: '', phone_number: '', password: '', role: 'user' });
+  const [metrics, setMetrics] = useState({ activeCount: 0, adminCount: 0, unverifiedCount: 0 });
 
   const menuItemStyle = {
     padding: '8px 10px',
@@ -36,6 +37,12 @@ function AdminUsers() {
       try {
         const res = await axios.get('http://127.0.0.1:8000/api/admin/users');
         setUsers(res.data);
+
+        // Update metrics
+        const activeCount = res.data.filter(u => u.is_active).length;
+        const adminCount = res.data.filter(u => u.role === 'admin').length;
+        const unverifiedCount = res.data.filter(u => !u.is_verified).length;
+        setMetrics({ activeCount, adminCount, unverifiedCount });
       } catch (error) {
         console.error('Failed to fetch users:', error);
       } finally {
@@ -426,9 +433,9 @@ const handleSaveUser = async () => {
         marginBottom: 20
       }}>
         <MetricCard label="Total Users" value={users.length} />
-        <MetricCard label="Active (30d)" value="924" />
-        <MetricCard label="Administrators" value="8" />
-        <MetricCard label="Banned / Inactive" value="12" />
+        <MetricCard label="Active (30d)" value={metrics.activeCount} />
+        <MetricCard label="Administrators" value={metrics.adminCount} />
+        <MetricCard label="Unverified" value={metrics.unverifiedCount} />
       </div>
 
       <Card>

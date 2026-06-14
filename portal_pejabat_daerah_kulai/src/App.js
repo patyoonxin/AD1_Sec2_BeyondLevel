@@ -172,7 +172,7 @@ function App() {
         <Route 
           path="/profile"
           element={
-              <ProfilePage />} />
+              <ProfilePage setUser={handleSetUser} />}  />
 
         <Route
           path="/forgot-password"

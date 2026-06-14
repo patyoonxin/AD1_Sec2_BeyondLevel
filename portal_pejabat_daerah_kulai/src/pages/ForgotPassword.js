@@ -4,45 +4,79 @@ import { useNavigate } from "react-router-dom";
 
 export default function ForgotPassword() {
   const [phone, setPhone] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const sendOtp = async () => {
+    setLoading(true);
+    setError("");
     try {
-      await axios.post(
-        "http://127.0.0.1:8000/api/auth/forgot-password/send-otp",
-        {
-          phone_number: phone
-        }
-      );
-
+      await axios.post("http://127.0.0.1:8000/api/auth/forgot-password/send-otp", {
+        phone_number: phone
+      });
       navigate("/reset-password", { state: { phone_number: phone } });
-
     } catch (err) {
-        console.log("FULL ERROR:", err);
-        console.log("RESPONSE:", err.response);
-        console.log("DATA:", err.response?.data);
-        alert(err.response?.data?.message || "Failed to send OTP");
+      setError(err.response?.data?.message || "Failed to send OTP");
+    } finally {
+      setLoading(false);
     }
-};
+  };
 
   return (
-    <div className="p-10">
-      <h1 className="text-2xl mb-4">Forgot Password</h1>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 px-4">
+      <div className="w-full max-w-md">
 
-      <input
-        type="text"
-        placeholder="0123456789"
-        value={phone}
-        onChange={(e) => setPhone(e.target.value)}
-        className="border p-2"
-      />
+        {/* Header */}
+        <div className="text-center mb-8 slide-in-left">
+          <div className="text-4xl mb-4">🔑</div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Forgot Password</h1>
+          <p className="text-gray-600">Enter your phone number to receive an OTP</p>
+        </div>
 
-      <button
-        onClick={sendOtp}
-        className="bg-blue-500 text-white px-4 py-2 ml-2"
-      >
-        Send OTP
-      </button>
+        {/* Card */}
+        <div className="card fade-in">
+
+          {error && (
+            <div className="alert alert-error mb-6"><span>{error}</span></div>
+          )}
+
+          <div className="form-group mb-6">
+            <label className="form-label">Phone Number</label>
+            <input
+              type="text"
+              placeholder="0123456789"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="form-input"
+            />
+          </div>
+
+          <button
+            onClick={sendOtp}
+            disabled={loading || !phone}
+            className="btn btn-primary w-full btn-lg font-semibold"
+          >
+            {loading ? (
+              <span className="flex items-center justify-center space-x-2">
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                <span>Sending OTP...</span>
+              </span>
+            ) : 'Send OTP'}
+          </button>
+
+          <p className="text-center text-gray-600 mt-4">
+            Remember your password?{' '}
+            <button
+              onClick={() => navigate('/login')}
+              className="text-blue-600 font-semibold hover:text-blue-700"
+            >
+              Back to Login
+            </button>
+          </p>
+
+        </div>
+      </div>
     </div>
   );
 }
