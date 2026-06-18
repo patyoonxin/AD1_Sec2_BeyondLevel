@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { complaintAPI, categoryAPI } from '../services/api';
 import { useTranslation } from '../lang/i18n';
 
@@ -19,6 +19,49 @@ function ComplaintsPage() {
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({ title: false, category: false, description: false, location: false });
+  const [showEmptyBanner, setShowEmptyBanner] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [aiError, setAiError] = useState('');
+  const debounceRef = useRef(null);
+
+  // Debounced AI category suggestion when description changes
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    const desc = formData.description.trim();
+    if (desc.length < 20) {
+      setAiSuggestion(null);
+      setIsAnalyzing(false);
+      return;
+    }
+    setAiError('');
+    debounceRef.current = setTimeout(async () => {
+      setIsAnalyzing(true);
+      try {
+        const res = await complaintAPI.suggestCategory(desc);
+        const raw = res.data.category || null;
+        if (raw) {
+          const matched = categories.find(
+            (c) => c.name.toLowerCase() === raw.toLowerCase()
+          );
+          setAiSuggestion(matched ? matched.name : raw);
+        } else {
+          setAiSuggestion(null);
+        }
+        setAiError('');
+      } catch (err) {
+        setAiSuggestion(null);
+        const isRateLimit = err.message && err.message.toLowerCase().includes('rate limit');
+        setAiError(isRateLimit
+          ? t('ai_rate_limit', 'AI rate limit reached. Please wait a moment.')
+          : t('ai_service_unavailable', 'AI Categorisation Service Unavailable'));
+      } finally {
+        setIsAnalyzing(false);
+      }
+    }, 3000);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [formData.description, categories]);
 
   // Search & filter state for the complaint tracking module
   const [searchTerm, setSearchTerm] = useState('');
@@ -68,10 +111,32 @@ function ComplaintsPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setErrorMessage('');
     setSuccessMessage('');
 
+    // All-blank guard: show prominent banner if nothing has been entered at all
+    const allBlank = !formData.title.trim() && !formData.category.trim()
+      && !formData.description.trim() && !formData.location.trim();
+    if (allBlank) {
+      setShowEmptyBanner(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    setShowEmptyBanner(false);
+
+    // Per-field validation for partially filled submissions
+    const errors = {
+      title:       !formData.title.trim(),
+      category:    !formData.category.trim(),
+      description: !formData.description.trim(),
+      location:    !formData.location.trim(),
+    };
+    setFieldErrors(errors);
+    if (Object.values(errors).some(Boolean)) {
+      return;
+    }
+
+    setLoading(true);
     try {
       const submitData = new FormData();
       submitData.append('title', formData.title);
@@ -81,24 +146,29 @@ function ComplaintsPage() {
       if (formData.attachment) {
         submitData.append('attachment', formData.attachment);
       }
-      
+
       const response = await complaintAPI.submitComplaint(submitData);
-      
+
       // Show success message
       setSuccessMessage(`Complaint submitted successfully! Reference #${response.data.record_id || response.data.id}`);
-      
+
       // Reset form
       setFormData({ title: '', category: '', description: '', location: '', attachment: null });
+      setFieldErrors({ title: false, category: false, description: false, location: false });
+      setShowEmptyBanner(false);
+      setAiSuggestion(null);
+      setIsAnalyzing(false);
+      setAiError('');
       setShowForm(false);
-      
+
       // Refresh complaints list
       await fetchComplaints();
-      
+
       // Clear success message after 3 seconds
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
-      const errorMsg = error.message || 'Error submitting complaint. Please try again.';
-      setErrorMessage(`${errorMsg}`);
+      setErrorMessage(t('submit_error', 'Unable to submit complaint. Please try again later.'));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       console.error('Error submitting complaint:', error);
     } finally {
       setLoading(false);
@@ -295,63 +365,107 @@ function ComplaintsPage() {
           <div className="card mb-8 fade-in">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('submit_new_complaint', 'Submit New Complaint')}</h2>
             <form onSubmit={handleSubmit} className="space-y-5">
+              {/* All-blank submission banner */}
+              {showEmptyBanner && (
+                <div className="p-4 bg-red-50 border border-red-300 rounded-lg text-red-700 text-sm font-medium fade-in">
+                  {t('all_fields_empty', 'Please enter your complaint details before submitting.')}
+                </div>
+              )}
               {/* Title */}
               <div className="form-group">
-                <label className="form-label">{t('title', 'Title')}</label>
+                <label className="form-label">{t('title', 'Title')} <span className="text-red-500">*</span></label>
                 <input
                   type="text"
                   value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  onChange={(e) => { setFormData({ ...formData, title: e.target.value }); setFieldErrors((p) => ({ ...p, title: false })); setShowEmptyBanner(false); }}
                   className="form-input"
                   placeholder={t('placeholder_title', 'Describe your title')}
-                  required
+                  style={fieldErrors.title ? { borderColor: '#ef4444' } : undefined}
                 />
+                {fieldErrors.title && (
+                  <p className="text-red-500 text-xs mt-1">{t('field_required', 'This field is required')}</p>
+                )}
+              </div>
+
+              {/* Description */}
+              <div className="form-group">
+                <label className="form-label">{t('description', 'Description')} <span className="text-red-500">*</span></label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => { setFormData({ ...formData, description: e.target.value }); setFieldErrors((p) => ({ ...p, description: false })); setShowEmptyBanner(false); }}
+                  className="form-textarea"
+                  placeholder={t('placeholder_description', 'Describe in detail...')}
+                  rows="5"
+                  style={fieldErrors.description ? { borderColor: '#ef4444' } : undefined}
+                ></textarea>
+                {fieldErrors.description && (
+                  <p className="text-red-500 text-xs mt-1">{t('field_required', 'This field is required')}</p>
+                )}
               </div>
 
               {/* Category */}
               <div className="form-group">
-                <label className="form-label">{t('category', 'Category')}</label>
+                <label className="form-label">
+                  {t('category', 'Category')} <span className="text-red-500">*</span>
+                  {isAnalyzing && (
+                    <span className="ml-2 inline-flex items-center gap-1 text-xs font-normal text-blue-500">
+                      <span className="inline-block w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></span>
+                      {t('analyzing', 'Analyzing...')}
+                    </span>
+                  )}
+                </label>
                 <select
                   value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  onChange={(e) => { setFormData({ ...formData, category: e.target.value }); setFieldErrors((p) => ({ ...p, category: false })); setShowEmptyBanner(false); setAiSuggestion(null); }}
                   className="form-select"
+                  style={fieldErrors.category ? { borderColor: '#ef4444' } : undefined}
                 >
                   <option value="">{t('select_category', 'Select a category')}</option>
                   {categories.map((cat) => (
                     <option key={cat.id} value={cat.name}>{cat.name}</option>
                   ))}
                 </select>
-              </div>
-
-              {/* Description */}
-              <div className="form-group">
-                <label className="form-label">{t('description', 'Description')}</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="form-textarea"
-                  placeholder={t('placeholder_description', 'Describe in detail...')}
-                  rows="5"
-                  required
-                ></textarea>
+                {fieldErrors.category && (
+                  <p className="text-red-500 text-xs mt-1">{t('field_required', 'This field is required')}</p>
+                )}
+                {aiSuggestion && !isAnalyzing && (
+                  <p
+                    className="text-xs mt-1.5 text-blue-600 cursor-pointer hover:text-blue-800 hover:underline transition-colors inline-flex items-center gap-1"
+                    onClick={() => {
+                      setFormData((prev) => ({ ...prev, category: aiSuggestion }));
+                      setFieldErrors((p) => ({ ...p, category: false }));
+                      setAiSuggestion(null);
+                    }}
+                  >
+                    {t('ai_suggestion', 'Suggestion')}: <span className="font-semibold">{aiSuggestion}</span>
+                  </p>
+                )}
+                {aiError && !isAnalyzing && (
+                  <p className="text-xs mt-1.5 text-amber-600 inline-flex items-center gap-1">
+                    <span>&#9888;</span> {aiError}
+                  </p>
+                )}
               </div>
 
               {/* Location */}
               <div className="form-group">
-                <label className="form-label">{t('location', 'Location')}</label>
+                <label className="form-label">{t('location', 'Location')} <span className="text-red-500">*</span></label>
                 <input
                   type="text"
                   value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  onChange={(e) => { setFormData({ ...formData, location: e.target.value }); setFieldErrors((p) => ({ ...p, location: false })); setShowEmptyBanner(false); }}
                   className="form-input"
                   placeholder={t('placeholder_location', 'Enter the location (e.g., Jalan Merdeka, Kulai)')}
-                  required
+                  style={fieldErrors.location ? { borderColor: '#ef4444' } : undefined}
                 />
+                {fieldErrors.location && (
+                  <p className="text-red-500 text-xs mt-1">{t('field_required', 'This field is required')}</p>
+                )}
               </div>
 
               {/* Attachment */}
               <div className="form-group">
-                <label className="form-label">{t('attachment_optional', 'Attachment (Optional)')}</label>
+                <label className="form-label">{t('attachment', 'Attachment')}</label>
                   <div
                   className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${isDragOver ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-blue-400'}`}
                   onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
@@ -446,7 +560,6 @@ function ComplaintsPage() {
 
           {complaints.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-state-icon">📭</div>
               <p className="empty-state-text">{t('no_records_yet', 'No records yet')}</p>
               <p className="text-gray-500 text-sm mt-2">{t('no_complaints_hint', 'Submit a complaint now to get help')}</p>
             </div>

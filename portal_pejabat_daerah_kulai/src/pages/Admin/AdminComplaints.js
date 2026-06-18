@@ -52,7 +52,7 @@ function AdminComplaints() {
       setPagination(res.meta || { current_page: 1, last_page: 1, total: res.data.length, per_page: 10 });
       setPage(targetPage);
     } catch (e) {
-      setError(e.message || 'Failed to load complaints');
+      setError('failed');
     } finally {
       setLoading(false);
     }
@@ -361,7 +361,20 @@ function AdminComplaints() {
         {loading ? (
           <div style={{ padding: '40px 0', textAlign: 'center', color: '#888780' }}>{t('loading', 'Loading...')}</div>
         ) : error ? (
-          <div style={{ padding: '40px 0', textAlign: 'center', color: '#a32d2d' }}>{error}</div>
+          <div style={{ padding: '48px 0', textAlign: 'center' }}>
+            <div style={{ fontSize: 32, marginBottom: 12 }}></div>
+            <p style={{ fontWeight: 600, color: '#555450', margin: '0 0 16px', fontSize: 13 }}>
+              {t('load_complaints_error', 'Unable to load complaints. Please try again later.')}
+            </p>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div style={{ padding: '48px 0', textAlign: 'center' }}>
+            <p style={{ fontWeight: 600, color: '#555450', margin: '0 0 6px', fontSize: 13 }}>
+              {(search || dateRange.start || dateRange.end)
+                ? t('no_search_results', 'No results match your current filters.')
+                : t('no_complaints_yet', 'No complaints submitted yet.')}
+            </p>
+          </div>
         ) : (
           <ClickableTable />
         )}

@@ -47,6 +47,8 @@ class ComplaintCategoryController extends Controller
         $validated = $request->validate([
             'name'        => ['required', 'string', 'max:100', 'unique:complaint_categories,name'],
             'description' => ['nullable', 'string', 'max:500'],
+            'synonyms'    => ['nullable', 'array'],
+            'synonyms.*'  => ['string', 'max:100'],
             'is_active'   => ['boolean'],
         ]);
 
@@ -85,6 +87,8 @@ class ComplaintCategoryController extends Controller
         $validated = $request->validate([
             'name'        => ['required', 'string', 'max:100', 'unique:complaint_categories,name,' . $id],
             'description' => ['nullable', 'string', 'max:500'],
+            'synonyms'    => ['nullable', 'array'],
+            'synonyms.*'  => ['string', 'max:100'],
             'is_active'   => ['boolean'],
         ]);
 

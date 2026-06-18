@@ -145,6 +145,20 @@ export const complaintAPI = {
   },
 
   /**
+   * Request an AI-powered category suggestion from the Gemini backend.
+   */
+  suggestCategory: async (description, categoryNames = []) => {
+    const res = await fetch(`${API_BASE_URL}/complaints/suggest-category`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ description, categories: categoryNames }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message || 'Failed to get suggestion');
+    return { data };
+  },
+
+  /**
    * Fetch the current user's complaints from the database.
    */
   getMyComplaints: async () => {
