@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { complaintAPI } from '../services/api';
+import { complaintAPI, categoryAPI } from '../services/api';
+import { useTranslation } from '../lang/i18n';
 
 function ComplaintsPage() {
+  const { t } = useTranslation();
   const [complaints, setComplaints] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -9,16 +11,32 @@ function ComplaintsPage() {
   const [selectedComplaint, setSelectedComplaint] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
-    category: 'Infrastruktur',
+    category: '',
     description: '',
     location: '',
     attachment: null,
   });
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  // Search & filter state for the complaint tracking module
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   useEffect(() => {
     fetchComplaints();
+    fetchCategories();
   }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const res = await categoryAPI.getActiveCategories();
+      setCategories(Array.isArray(res.data) ? res.data : []);
+    } catch {
+      setCategories([]);
+    }
+  };
 
   const fetchComplaints = async () => {
     try {
@@ -28,6 +46,25 @@ function ComplaintsPage() {
       console.error('Error fetching complaints:', error);
     }
   };
+
+  /*
+   * Client-side filtering across the already-loaded complaints.
+   * Matches the search term against title, description, category,
+   * location, and record_id. Also applies the active status filter.
+   */
+  const filteredComplaints = complaints.filter((c) => {
+    const term = searchTerm.toLowerCase();
+    const matchesSearch = !term || [
+      c.title,
+      c.description,
+      c.category,
+      c.location,
+      c.record_id,
+    ].some((field) => (field || '').toLowerCase().includes(term));
+
+    const matchesStatus = statusFilter === 'all' || c.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,10 +85,10 @@ function ComplaintsPage() {
       const response = await complaintAPI.submitComplaint(submitData);
       
       // Show success message
-      setSuccessMessage(`✅ Complaint submitted successfully! Reference #${response.data.id}`);
+      setSuccessMessage(`Complaint submitted successfully! Reference #${response.data.record_id || response.data.id}`);
       
       // Reset form
-      setFormData({ title: '', category: 'Infrastruktur', description: '', location: '', attachment: null });
+      setFormData({ title: '', category: '', description: '', location: '', attachment: null });
       setShowForm(false);
       
       // Refresh complaints list
@@ -61,7 +98,7 @@ function ComplaintsPage() {
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
       const errorMsg = error.message || 'Error submitting complaint. Please try again.';
-      setErrorMessage(`❌ ${errorMsg}`);
+      setErrorMessage(`${errorMsg}`);
       console.error('Error submitting complaint:', error);
     } finally {
       setLoading(false);
@@ -69,10 +106,13 @@ function ComplaintsPage() {
   };
 
   const getStatusBadge = (status) => {
+    // Labels come from the active translation dictionary so the badges
+    // re-render whenever the language is toggled.
     const statusMap = {
-      pending: { badge: 'badge-warning', label: '⏳ Pending' },
-      in_progress: { badge: 'badge-primary', label: '⚙️ In Progress' },
-      resolved: { badge: 'badge-success', label: '✅ Resolved' },
+      pending:     { badge: 'badge-warning', label: t('pending', 'Pending') },
+      in_progress: { badge: 'badge-primary', label: t('in_progress', 'In Progress') },
+      resolved:    { badge: 'badge-success', label: t('resolved', 'Resolved') },
+      rejected:    { badge: 'badge-danger',  label: t('rejected', 'Rejected') },
     };
     return statusMap[status] || { badge: 'badge-gray', label: status };
   };
@@ -99,7 +139,7 @@ function ComplaintsPage() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-900">Complaint Status</h2>
+                <h2 className="text-2xl font-bold text-gray-900">{t('complaint_status', 'Complaint Status')}</h2>
                 <button
                   onClick={() => setSelectedComplaint(null)}
                   className="text-gray-500 hover:text-gray-700 text-2xl"
@@ -116,53 +156,63 @@ function ComplaintsPage() {
                     <span className={`badge ${getStatusBadge(selectedComplaint.status).badge}`}>
                       {getStatusBadge(selectedComplaint.status).label}
                     </span>
-                    <span className="text-sm text-gray-500">Reference #: {selectedComplaint.id}</span>
+                    <span className="text-sm text-gray-500">{t('record_id', 'Record ID')}: {selectedComplaint.record_id || selectedComplaint.id}</span>
                   </div>
                 </div>
 
                 {/* Complaint Details */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600">Category</p>
+                    <p className="text-sm text-gray-600">{t('category', 'Category')}</p>
                     <p className="text-lg font-semibold text-gray-900">{selectedComplaint.category}</p>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600">Location</p>
+                    <p className="text-sm text-gray-600">{t('location', 'Location')}</p>
                     <p className="text-lg font-semibold text-gray-900">{selectedComplaint.location}</p>
                   </div>
                 </div>
 
                 {/* Description */}
                 <div>
-                  <p className="text-sm text-gray-600 mb-2 font-semibold">Description</p>
+                  <p className="text-sm text-gray-600 mb-2 font-semibold">{t('description', 'Description')}</p>
                   <p className="text-gray-900 bg-blue-50 p-3 rounded">{selectedComplaint.description}</p>
                 </div>
 
                 {/* Attachment */}
                 {selectedComplaint.attachment && (
                   <div>
-                    <p className="text-sm text-gray-600 mb-2 font-semibold">📎 Attachment</p>
-                    <a
-                      href={selectedComplaint.attachment}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                      View Attachment
-                    </a>
+                    <p className="text-sm text-gray-600 mb-2 font-semibold">{t('attachment', 'Attachment')}</p>
+                    {/\.(jpe?g|png|gif|webp|bmp)(\?.*)?$/i.test(selectedComplaint.attachment) ? (
+                      <img
+                        src={selectedComplaint.attachment}
+                        alt={t('attachment', 'Attachment')}
+                        onClick={() => window.open(selectedComplaint.attachment, '_blank', 'noopener,noreferrer')}
+                        className="rounded-lg border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity object-contain"
+                        style={{ maxHeight: 200, maxWidth: '100%' }}
+                      />
+                    ) : (
+                      <a
+                        href={selectedComplaint.attachment}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        {t('view_attachment', 'View Attachment')}
+                      </a>
+                    )}
                   </div>
                 )}
 
                 {/* Timeline */}
                 <div>
-                  <p className="text-sm text-gray-600 mb-3 font-semibold">📋 Status Timeline</p>
+                  <p className="text-sm text-gray-600 mb-3 font-semibold">{t('status_timeline', 'Status Timeline')}</p>
                   <div className="space-y-3">
                     <div className="flex gap-4">
                       <div className="flex flex-col items-center">
                         <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">📝</div>
                       </div>
                       <div className="text-sm">
-                        <p className="font-semibold text-gray-900">Submitted</p>
+                        <p className="font-semibold text-gray-900">{t('submitted', 'Submitted')}</p>
                         <p className="text-gray-600">{new Date(selectedComplaint.created_at).toLocaleString()}</p>
                       </div>
                     </div>
@@ -175,7 +225,7 @@ function ComplaintsPage() {
                           </div>
                         </div>
                         <div className="text-sm">
-                          <p className="font-semibold text-gray-900">{selectedComplaint.status === 'in_progress' ? 'In Progress' : 'Resolved'}</p>
+                          <p className="font-semibold text-gray-900">{selectedComplaint.status === 'in_progress' ? t('in_progress', 'In Progress') : t('resolved', 'Resolved')}</p>
                           <p className="text-gray-600">{new Date(selectedComplaint.updated_at).toLocaleString()}</p>
                         </div>
                       </div>
@@ -185,16 +235,32 @@ function ComplaintsPage() {
                   {/* Staff Handler - Under Timeline */}
                   {selectedComplaint.handler && (
                     <div className="mt-4 bg-purple-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-2 font-semibold">👤 Staff Handler</p>
+                      <p className="text-sm text-gray-600 mb-2 font-semibold">{t('staff_handler', 'Staff Handler')}</p>
                       <p className="text-lg font-semibold text-gray-900">{selectedComplaint.handler}</p>
                     </div>
                   )}
 
-                  {/* Conclusion/Comment - Under Timeline */}
-                  {selectedComplaint.conclusion && (
-                    <div className="mt-4 bg-green-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-2 font-semibold">💬 Conclusion</p>
-                      <p className="text-gray-900">{selectedComplaint.conclusion}</p>
+                  {/* Admin Response Thread - Under Timeline */}
+                  {Array.isArray(selectedComplaint.responses) && selectedComplaint.responses.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-sm text-gray-600 mb-3 font-semibold">
+                        {t('admin_responses', 'Admin Responses')} ({selectedComplaint.responses.length})
+                      </p>
+                      <div className="space-y-3">
+                        {selectedComplaint.responses.map((r) => (
+                          <div key={r.id} className="bg-green-50 p-4 rounded-lg border border-green-100">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm font-semibold text-gray-900">
+                                {r.admin?.name || 'Admin'}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {new Date(r.created_at).toLocaleString()}
+                              </span>
+                            </div>
+                            <p className="text-gray-900 whitespace-pre-wrap">{r.message}</p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -204,7 +270,7 @@ function ComplaintsPage() {
                   onClick={() => setSelectedComplaint(null)}
                   className="w-full btn btn-secondary mt-4"
                 >
-                  Close
+                  {t('close', 'Close')}
                 </button>
               </div>
             </div>
@@ -213,59 +279,58 @@ function ComplaintsPage() {
 
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">📝 Manage Complaints</h1>
-            <p className="text-gray-600 mt-2">Submit, monitor, and manage all your complaints here</p>
+            <h1 className="text-3xl font-bold text-gray-900">{t('manage_complaints', 'Manage Complaints')}</h1>
+            <p className="text-gray-600 mt-2">{t('page_subtitle_complaints', 'Submit, monitor and manage all your complaints here')}</p>
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
             className="btn btn-primary"
           >
-            {showForm ? '✕ Cancel' : '➕ New Complaint'}
+            {showForm ? `✕ ${t('cancel', 'Cancel')}` : t('new_complaint', '+ New Complaint')}
           </button>
         </div>
 
         {/* Complaint Form */}
         {showForm && (
           <div className="card mb-8 fade-in">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Submit New Complaint</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('submit_new_complaint', 'Submit New Complaint')}</h2>
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Title */}
               <div className="form-group">
-                <label className="form-label">Complaint Title</label>
+                <label className="form-label">{t('title', 'Title')}</label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   className="form-input"
-                  placeholder="Describe your complaint title"
+                  placeholder={t('placeholder_title', 'Describe your title')}
                   required
                 />
               </div>
 
               {/* Category */}
               <div className="form-group">
-                <label className="form-label">Category</label>
+                <label className="form-label">{t('category', 'Category')}</label>
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="form-select"
                 >
-                  <option>Infrastructure</option>
-                  <option>Public Welfare</option>
-                  <option>License</option>
-                  <option>Cleanliness</option>
-                  <option>Community</option>
+                  <option value="">{t('select_category', 'Select a category')}</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.name}>{cat.name}</option>
+                  ))}
                 </select>
               </div>
 
               {/* Description */}
               <div className="form-group">
-                <label className="form-label">Detailed Description</label>
+                <label className="form-label">{t('description', 'Description')}</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="form-textarea"
-                  placeholder="Describe your complaint in detail..."
+                  placeholder={t('placeholder_description', 'Describe in detail...')}
                   rows="5"
                   required
                 ></textarea>
@@ -273,21 +338,26 @@ function ComplaintsPage() {
 
               {/* Location */}
               <div className="form-group">
-                <label className="form-label">📍 Location</label>
+                <label className="form-label">{t('location', 'Location')}</label>
                 <input
                   type="text"
                   value={formData.location}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                   className="form-input"
-                  placeholder="Enter the location of the complaint (e.g., Jalan Merdeka, Kulai)"
+                  placeholder={t('placeholder_location', 'Enter the location (e.g., Jalan Merdeka, Kulai)')}
                   required
                 />
               </div>
 
               {/* Attachment */}
               <div className="form-group">
-                <label className="form-label">📎 Attachment (Optional)</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors cursor-pointer">
+                <label className="form-label">{t('attachment_optional', 'Attachment (Optional)')}</label>
+                  <div
+                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${isDragOver ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-blue-400'}`}
+                  onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                  onDragLeave={() => setIsDragOver(false)}
+                  onDrop={(e) => { e.preventDefault(); setIsDragOver(false); const file = e.dataTransfer.files?.[0]; if (file) setFormData({ ...formData, attachment: file }); }}
+                >
                   <input
                     type="file"
                     onChange={(e) => setFormData({ ...formData, attachment: e.target.files?.[0] || null })}
@@ -297,8 +367,8 @@ function ComplaintsPage() {
                   />
                   <label htmlFor="file-input" className="cursor-pointer block">
                     <div className="text-3xl mb-2">📤</div>
-                    <p className="text-sm font-medium text-gray-700">Click to upload or drag and drop</p>
-                    <p className="text-xs text-gray-500 mt-1">PDF, JPG, PNG, DOCX (Max 5MB)</p>
+                    <p className="text-sm font-medium text-gray-700">{t('click_to_upload', 'Click to upload or drag and drop')}</p>
+                    <p className="text-xs text-gray-500 mt-1">{t('attachment_hint', 'PDF, JPG, PNG, DOCX (Max 5MB)')}</p>
                     {formData.attachment && (
                       <p className="text-sm text-blue-600 font-semibold mt-2">✓ {formData.attachment.name}</p>
                     )}
@@ -312,27 +382,82 @@ function ComplaintsPage() {
                 disabled={loading}
                 className="btn btn-success btn-lg"
               >
-                {loading ? '⏳ Sending...' : '📤 Submit Complaint'}
+                {loading ? `${t('loading', 'Loading...')}` : t('submit', 'Submit')}
               </button>
             </form>
           </div>
         )}
 
         {/* Complaints List */}
+        {!showForm && (
         <div className="card">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            {complaints.length === 0 ? 'No complaints yet' : `Your ${complaints.length} Complaint${complaints.length !== 1 ? 's' : ''}`}
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            {complaints.length === 0
+              ? t('no_records_yet', 'No records yet')
+              : t('your_n_complaints', `Your ${complaints.length} Complaint${complaints.length !== 1 ? 's' : ''}`, { count: complaints.length })}
           </h2>
+
+          {/* Search & Filter Controls */}
+          {complaints.length > 0 && (
+            <div className="flex flex-col sm:flex-row gap-3 mb-5">
+              {/* Search input with clear (X) button on the right */}
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder={t('placeholder_search_user_complaint', 'Search by title, description, category, location, or record ID...')}
+                  className="form-input w-full pr-10"
+                />
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchTerm('')}
+                    aria-label="Clear search"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 text-lg leading-none"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              {/* Status filter with explicit chevron icon */}
+              <div className="relative sm:w-56">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="form-select w-full pr-10 appearance-none"
+                >
+                  <option value="all">{t('all_status', 'All Status')}</option>
+                  <option value="pending">{t('pending', 'Pending')}</option>
+                  <option value="in_progress">{t('in_progress', 'In Progress')}</option>
+                  <option value="resolved">{t('resolved', 'Resolved')}</option>
+                  <option value="rejected">{t('rejected', 'Rejected')}</option>
+                </select>
+                <svg
+                  className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500"
+                  width="14" height="14" viewBox="0 0 20 20" fill="none"
+                >
+                  <path d="M5 7l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+            </div>
+          )}
 
           {complaints.length === 0 ? (
             <div className="empty-state">
               <div className="empty-state-icon">📭</div>
-              <p className="empty-state-text">You don't have any complaints yet</p>
-              <p className="text-gray-500 text-sm mt-2">Submit a complaint now to get help</p>
+              <p className="empty-state-text">{t('no_records_yet', 'No records yet')}</p>
+              <p className="text-gray-500 text-sm mt-2">{t('no_complaints_hint', 'Submit a complaint now to get help')}</p>
+            </div>
+          ) : filteredComplaints.length === 0 ? (
+            <div className="empty-state">
+              <p className="empty-state-text">{t('no_search_results', 'No results match your search')}</p>
+              <p className="text-gray-500 text-sm mt-2">{t('try_different_keyword', 'Try a different keyword or status filter')}</p>
             </div>
           ) : (
             <div className="space-y-3">
-              {complaints.map((complaint) => (
+              {filteredComplaints.map((complaint) => (
                 <div 
                   key={complaint.id} 
                   className="card-hover border border-gray-200 cursor-pointer hover:shadow-md transition-shadow"
@@ -352,26 +477,14 @@ function ComplaintsPage() {
                     <span>🏷️ {complaint.category}</span>
                     <span>📍 {complaint.location}</span>
                     <span>📅 {new Date(complaint.created_at).toLocaleDateString('en-US')}</span>
-                    <span>🔔 ID: {complaint.id}</span>
+                    <span>🔔 {t('record_id', 'Record ID')}: {complaint.record_id || complaint.id}</span>
                   </div>
-                  {complaint.attachment && (
-                    <div className="mt-2">
-                      <a
-                        href={complaint.attachment}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        📎 View Attachment
-                      </a>
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
           )}
         </div>
+        )}
       </div>
     </div>
   );

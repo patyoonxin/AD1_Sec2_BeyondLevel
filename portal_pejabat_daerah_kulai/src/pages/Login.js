@@ -3,7 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../services/api';
 
 function Login({ setUser }) {
-  const [phoneNo, setPhoneNo] = useState('');
+  const [isAdmin, setIsAdmin]   = useState(false);
+  const [identifier, setIdentifier] = useState(''); // phone or email
   const [password, setPassword] = useState('');
   const [error, setError]       = useState('');
   const [loading, setLoading]   = useState(false);
@@ -15,27 +16,25 @@ function Login({ setUser }) {
     setError('');
 
     try {
-      const response = await authAPI.login(phoneNo, password);
+      const payload = isAdmin
+        ? { email: identifier, password }
+        : { phone_number: identifier, password };
+
+      const response = await authAPI.login(payload);
       const user = response.data.user;
 
       localStorage.setItem('authToken', response.data.token);
       localStorage.setItem('userId', user.id);
       localStorage.setItem('user', JSON.stringify(user));
-
       setUser(user);
 
-      // Redirect admin users to the admin dashboard
-      if (user.role === 'admin') {
+      if (user.role?.toLowerCase() === 'admin') {
         navigate('/admin/dashboard');
       } else {
-        navigate('/chatbot');
+        navigate('/');
       }
     } catch (err) {
-      const errorMessage =
-        err.response?.data?.message ||
-        err.message ||
-        'Login failed. Please try again.';
-      setError(errorMessage);
+      setError(err.response?.data?.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -45,32 +44,52 @@ function Login({ setUser }) {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 px-4">
       <div className="w-full max-w-md">
 
-        {/* Header */}
         <div className="text-center mb-8 slide-in-left">
           <div className="text-4xl mb-4">🏛️</div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign In</h1>
           <p className="text-gray-600">Sign in to the Official Portal of Kulai District Office</p>
         </div>
 
-        {/* Form Card */}
         <div className="card fade-in">
           {error && (
-            <div className="alert alert-error mb-6">
-              <span>{error}</span>
-            </div>
+            <div className="alert alert-error mb-6"><span>{error}</span></div>
           )}
+
+          {/* Toggle */}
+          <div className="flex rounded-lg overflow-hidden border border-gray-200 mb-6">
+            <button
+              type="button"
+              onClick={() => { setIsAdmin(false); setIdentifier(''); setError(''); }}
+              className={`flex-1 py-2 text-sm font-medium transition-colors ${
+                !isAdmin ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              User
+            </button>
+            <button
+              type="button"
+              onClick={() => { setIsAdmin(true); setIdentifier(''); setError(''); }}
+              className={`flex-1 py-2 text-sm font-medium transition-colors ${
+                isAdmin ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              Admin
+            </button>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
 
-            {/* Phone Number */}
+            {/* Dynamic field */}
             <div className="form-group">
-              <label className="form-label">Your Phone Number</label>
+              <label className="form-label">
+                {isAdmin ? 'Email Address' : 'Your Phone Number'}
+              </label>
               <input
-                type="text"
-                value={phoneNo}
-                onChange={(e) => setPhoneNo(e.target.value)}
+                type={isAdmin ? 'email' : 'text'}
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
                 className="form-input"
-                placeholder="0123456789"
+                placeholder={isAdmin ? 'admin@example.com' : '+60123456789'}
                 required
               />
             </div>
@@ -88,19 +107,23 @@ function Login({ setUser }) {
               />
             </div>
 
-            {/* Remember Me */}
             <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="remember"
-                className="rounded border-gray-300"
-              />
+              <input type="checkbox" id="remember" className="rounded border-gray-300" />
               <label htmlFor="remember" className="ml-2 text-sm text-gray-600 cursor-pointer">
                 Remember me
               </label>
             </div>
 
-            {/* Submit */}
+            <div>
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Forgot Password?
+              </button>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
@@ -111,20 +134,19 @@ function Login({ setUser }) {
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                   <span>Processing...</span>
                 </span>
-              ) : (
-                'Sign In'
-              )}
+              ) : 'Sign In'}
             </button>
           </form>
 
-          {/* Admin hint */}
-          <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg text-sm text-blue-700">
-            <strong>Admin login:</strong> admin@kulai.gov.my &nbsp;/&nbsp; admin123
-          </div>
+          {/* Show admin hint only on admin tab */}
+          {isAdmin && (
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg text-sm text-blue-700">
+              <strong>Admin login:</strong> pejabatdaerahkulaiwebsite@gmail.com &nbsp;/&nbsp; admin123
+            </div>
+          )}
 
           <div className="divider"></div>
 
-          {/* Register link */}
           <p className="text-center text-gray-600">
             Don't have an account yet?{' '}
             <Link to="/register" className="text-blue-600 font-semibold hover:text-blue-700">
@@ -133,7 +155,6 @@ function Login({ setUser }) {
           </p>
         </div>
 
-        {/* Footer */}
         <p className="text-center text-sm text-gray-600 mt-6">
           Need help?{' '}
           <a href="mailto:support@kulai.gov.my" className="text-blue-600 hover:text-blue-700 font-medium">
