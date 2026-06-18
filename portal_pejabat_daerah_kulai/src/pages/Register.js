@@ -22,27 +22,45 @@ function Register() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+  e.preventDefault();
+  setLoading(true);
+  setError('');
 
-    if (formData.password !== formData.password_confirmation) {
-      setError('Passwords do not match');
-      setLoading(false);
-      return;
-    }
+  if (formData.password !== formData.password_confirmation) {
+    setError('Passwords do not match');
+    setLoading(false);
+    return;
+  }
 
-    try {
-      await authAPI.register(formData.name, formData.phoneNo, formData.password);
-      navigate('/login');
-    } catch (err) {
-      // Handle both axios errors and regular errors from JSON database
-      const errorMessage = err.response?.data?.message || err.message || 'Registration failed. Please try again.';
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    console.log("registering...");
+
+    const res = await authAPI.register(
+      formData.name,
+      formData.phoneNo,
+      formData.password,
+      formData.password_confirmation
+    );
+
+    console.log("success:", res.data);
+
+    navigate('/verify-otp', {
+      state: { phoneNo: formData.phoneNo }
+    });
+
+  } catch (err) {
+    console.log("error:", err.response?.data || err.message);
+
+    const errorMessage =
+      err.response?.data?.message ||
+      err.message ||
+      'Registration failed. Please try again.';
+
+    setError(errorMessage);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 px-4">
@@ -86,7 +104,7 @@ function Register() {
                 value={formData.phoneNo}
                 onChange={handleChange}
                 className="form-input"
-                placeholder="0123456789"
+                placeholder="+60123456789"
                 required
               />
             </div>

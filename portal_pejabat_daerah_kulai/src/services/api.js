@@ -5,48 +5,29 @@
  */
 
 import databaseService from '../data/databaseService';
+import axios from "axios";
+
 
 // ============================================
 // AUTH ENDPOINTS (JSON Database)
 // ============================================
 export const authAPI = {
-  login: async (phoneNo, password) => {
-    try {
-      const user = await databaseService.authenticateUser(phoneNo, password);
-      if (!user) {
-        throw new Error('Invalid phone number or password');
-      }
-      const token = databaseService.generateMockToken();
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('userId', user.id);
-      return {
-        data: {
-          user,
-          token,
-          message: 'Login successful'
-        }
-      };
-    } catch (error) {
-      throw error;
-    }
+  login: async (payload) => {
+    return axios.post("http://127.0.0.1:8000/api/login", payload);
   },
 
-  register: async (name, phoneNo, password) => {
-    try {
-      const user = await databaseService.registerUser({
-        name,
-        phoneNo,
-        password
-      });
-      return {
-        data: {
-          user,
-          message: 'Registration successful'
-        }
-      };
-    } catch (error) {
-      throw error;
-    }
+   register: async (name, phoneNo, password, password_confirmation) => {
+    const response = await axios.post(
+      "http://127.0.0.1:8000/api/register",
+      {
+        name: name,
+        phone_number: phoneNo,
+        password: password,
+        password_confirmation: password_confirmation
+      }
+    );
+
+    return response;
   },
 
   logout: async () => {
@@ -72,6 +53,20 @@ export const authAPI = {
   changePassword: async (data) => {
     // For JSON DB, just acknowledge (not persisted)
     return { data: { message: 'Password changed successfully' } };
+  },
+
+  sendOtp: async (phoneNo) => {
+  return axios.post("http://127.0.0.1:8000/api/send-otp", {
+    phone_number: phoneNo
+  });
+  },
+
+  resetPassword: async (data) => {
+  return axios.post("http://127.0.0.1:8000/api/reset-password", {
+    phone_number: data.phone_number,
+    otp: data.otp,
+    password: data.password
+  });
   }
 };
 

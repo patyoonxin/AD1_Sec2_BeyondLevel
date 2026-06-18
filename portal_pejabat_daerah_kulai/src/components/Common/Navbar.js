@@ -47,6 +47,13 @@ function Navbar({ user, setUser }) {
                 ❓ {t('faq', 'FAQ')}
               </Link>
               
+              <Link
+                to="/profile"
+                className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 flex items-center gap-1"
+              >
+                👤 Profile
+              </Link>
+
               <LanguageSwitcher style={{ marginLeft: 8 }} />
               <button
                 onClick={handleLogout}
