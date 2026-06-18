@@ -195,7 +195,7 @@ export function DataTable({ columns, rows }) {
 }
 
 /* ── SearchBar ───────────────────────────────────────── */
-export function SearchBar({ placeholder, value, onChange }) {
+export function SearchBar({ placeholder, value, onChange, onClear }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 8,
@@ -215,6 +215,20 @@ export function SearchBar({ placeholder, value, onChange }) {
           fontSize: 12, color: '#333', flex: 1,
         }}
       />
+      {value && onClear && (
+        <button
+          type="button"
+          onClick={onClear}
+          aria-label="Clear search"
+          title="Clear search"
+          style={{
+            border: 'none', background: 'transparent', cursor: 'pointer',
+            color: '#888780', padding: 2, lineHeight: 1, fontSize: 14,
+          }}
+        >
+          ✕
+        </button>
+      )}
     </div>
   );
 }

@@ -41,10 +41,12 @@ class ChatMessageController extends Controller
      */
     public function index($conversationId)
     {
-        return ChatMessage::where('conversation_id', $conversationId)
-            ->with('sender')
+        $messages = ChatMessage::with('sender')
+            ->where('conversation_id', $conversationId)
             ->orderBy('created_at', 'asc')
             ->get();
+
+        return response()->json($messages);
     }
 
     /**

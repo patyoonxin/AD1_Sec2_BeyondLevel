@@ -1,10 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../../image/logo.png';
+import { LanguageSwitcher, useTranslation } from '../../lang/i18n';
+import { chatAPI } from '../../services/api';
 
 function Navbar({ user, setUser }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [hasConversation, setHasConversation] = useState(false);
+
+  // Fetch user messages to check if button should be visible
+  useEffect(() => {
+    const fetchConversation = async () => {
+      try {
+        // Only fetch if user is logged in and not admin
+        if (user && user.id && user.role !== 'admin') {
+          const response = await chatAPI.checkUserHasConversation(user.id);
+          console.log('Navbar - User Messages Response:', response);
+          
+        setHasConversation(response.hasConversation);
+        } else {
+          setHasConversation(false);
+        }
+      } catch (error) {
+        console.error('Error fetching user messages:', error);
+        setHasConversation(false);
+      }
+    };
+
+    fetchConversation();
+  }, [user]);
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
@@ -30,26 +56,41 @@ function Navbar({ user, setUser }) {
                 to="/chatbot"
                 className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
               >
-                💬 Chatbot
+                💬 {t('chatbot', 'Chatbot')}
               </Link>
               <Link
                 to="/complaints"
                 className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
               >
-                📝 Aduan
+                📝 {t('complaints', 'Complaints')}
               </Link>
               <Link
                 to="/faq"
                 className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
               >
-                ❓ Soalan Lazim
+                ❓ {t('faq', 'FAQ')}
               </Link>
-              
+                {hasConversation && (
+                <Link
+                  to="/real-agent"
+                  className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                >
+                  📞 Permintaan Saya
+                </Link>
+              )}
+              <Link
+                to="/profile"
+                className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 flex items-center gap-1"
+              >
+                👤 Profile
+              </Link>
+
+              <LanguageSwitcher style={{ marginLeft: 8 }} />
               <button
                 onClick={handleLogout}
                 className="btn btn-danger btn-sm ml-2"
               >
-                Log Keluar
+                {t('logout', 'Log Out')}
               </button>
             </>
           ) : (
@@ -58,14 +99,15 @@ function Navbar({ user, setUser }) {
                 to="/login"
                 className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors duration-200"
               >
-                Log Masuk
+                {t('login', 'Log In')}
               </Link>
               <Link
                 to="/register"
                 className="btn btn-primary btn-sm"
               >
-                Daftar
+                {t('register', 'Register')}
               </Link>
+              <LanguageSwitcher style={{ marginLeft: 8 }} />
             </>
           )}
         </div>
@@ -108,6 +150,15 @@ function Navbar({ user, setUser }) {
                 >
                   ❓ Soalan Lazim
                 </Link>
+                {hasConversation && (
+                  <Link
+                    to="/real-agent"
+                    className="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 rounded-lg transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    📞 Permintaan Saya
+                  </Link>
+                )}
                 <Link
                   to="/dashboard"
                   className="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 rounded-lg transition-colors"

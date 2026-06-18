@@ -48,6 +48,14 @@ main {
 .message-time {
   @apply text-xs opacity-70 mt-2 block;
 }
+.chat-bubble-content-container{
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+.chat-bubble-content-container button{
+  max-width: 13rem
+}
 
 /* Typing Indicator */
 .typing-indicator {
@@ -154,7 +162,7 @@ td {
 }
 
 .feature-card {
-  @apply card-hover text-center p-8;
+  @apply text-center p-8 rounded-xl bg-white shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
 }
 
 .feature-icon {
@@ -171,7 +179,7 @@ td {
 
 /* Stats Card */
 .stat-card {
-  @apply card-elevated;
+  @apply p-6 rounded-xl bg-white shadow-sm transition-all duration-300 hover:shadow-lg;
 }
 
 .stat-value {
@@ -202,15 +210,15 @@ footer a {
 
 /* Status Badge Colors */
 .badge-pending {
-  @apply status-pending px-3 py-1 rounded-full text-sm font-semibold;
+  @apply bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold;
 }
 
 .badge-in-progress {
-  @apply status-in-progress px-3 py-1 rounded-full text-sm font-semibold;
+  @apply bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold;
 }
 
 .badge-resolved {
-  @apply status-resolved px-3 py-1 rounded-full text-sm font-semibold;
+  @apply bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold;
 }
 
 /* Link Hover Effects */
