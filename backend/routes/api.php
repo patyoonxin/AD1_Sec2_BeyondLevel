@@ -34,7 +34,9 @@ Route::delete('/faq/{id}', [FaqController::class, 'destroy']);
     //Real Agent Chat conversation and message routes
     Route::post('/conversations', [ChatConversationController::class, 'store']);
     Route::get('/conversations', [ChatConversationController::class, 'index']);
+    Route::get('/conversations/has/{userId}', [ChatConversationController::class, 'hasConversation']);
     Route::get('/conversations/{id}', [ChatConversationController::class, 'show']);
+    
     Route::post('/messages', [ChatMessageController::class, 'store']);
     Route::get('/messages/{conversationId}', [ChatMessageController::class, 'index']);
     Route::patch('/messages/{conversationId}/read', [ChatMessageController::class, 'markAsRead']);

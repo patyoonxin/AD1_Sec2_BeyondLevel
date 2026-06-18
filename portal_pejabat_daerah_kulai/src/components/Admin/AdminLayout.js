@@ -16,7 +16,7 @@ const NAV_ITEMS = [
       { path: '/admin/complaints',  label: 'Complaint Management',  icon: 'complaint'},
       { path: '/admin/categories',  label: 'Manage Categories',     icon: 'categories' },
       { path: '/admin/chatbot',     label: 'AI Chatbot',            icon: 'chatbot' },
-      { path: '/admin/real-agent',  label: 'Real Agent',            icon: 'real-agent' },
+      { path: '/admin/real-agent',  label: 'Real Agent',            icon: 'chatbot' },
       { path: '/admin/users',       label: 'User Management',       icon: 'users' },
       { path: '/admin/faq',         label: 'FAQs & Knowledge Base', icon: 'faq' },
       { path: '/admin/analytics',   label: 'Analytics & Reports',   icon: 'analytics' },

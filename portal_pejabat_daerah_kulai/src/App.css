@@ -48,6 +48,14 @@ main {
 .message-time {
   @apply text-xs opacity-70 mt-2 block;
 }
+.chat-bubble-content-container{
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+.chat-bubble-content-container button{
+  max-width: 13rem
+}
 
 /* Typing Indicator */
 .typing-indicator {

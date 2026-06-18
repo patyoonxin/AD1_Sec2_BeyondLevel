@@ -531,6 +531,16 @@ export const chatAPI = {
 
     return res.json();
   },
+
+  // check if user has sent any messages
+  checkUserHasConversation: async (userId) => {
+    const res = await fetch(
+      // `http://127.0.0.1:8000/api/messages?sender_id=${userId}`
+      `http://127.0.0.1:8000/api/conversations/has/${userId}`
+    );
+
+    return res.json();
+  },
 };
 
 // ============================================
