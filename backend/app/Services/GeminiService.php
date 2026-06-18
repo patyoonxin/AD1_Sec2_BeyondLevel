@@ -125,4 +125,86 @@ class GeminiService
 
         return "Sorry, the chatbot service is temporarily unavailable. Please contact a real agent.";
     }
+
+    /**
+     * Categorize a complaint description using the Gemini API.
+     *
+     * Sends the complaint text to Gemini and asks it to predict the most
+     * appropriate category from a predefined list relevant to local council services.
+     *
+     * @param  string  $description  The complaint description provided by the user.
+     * @return string  The predicted category name.
+     */
+    public function categorizeComplaint(string $description): string
+    {
+        $apiKey = env('GEMINI_API_KEY');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Categorization Prompt
+        |--------------------------------------------------------------------------
+        | Instructs Gemini to classify the complaint into one of the predefined
+        | categories relevant to Pejabat Daerah Kulai / Majlis Bandaraya services.
+        | The response must be ONLY the category name, nothing else.
+        */
+        $prompt = "You are a complaint categorization assistant for Pejabat Daerah Kulai.
+
+Analyze the following complaint description and classify it into EXACTLY ONE of these categories:
+- Road Damage
+- Waste Management
+- Drainage / Flooding
+- Street Lighting
+- Illegal Parking
+- Public Facility Damage
+- Noise Complaint
+- Illegal Dumping
+- Health & Sanitation
+- Traffic Safety
+- Others
+
+Rules:
+1. Reply with ONLY the exact category name from the list above.
+2. Do not add explanations, punctuation, or extra words.
+3. If none fit well, reply with 'Others'.
+
+Complaint Description: {$description}";
+
+        $response = Http::post(
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={$apiKey}",
+            [
+                "contents" => [
+                    [
+                        "parts" => [
+                            [
+                                "text" => $prompt
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Parse Category from Response
+        |--------------------------------------------------------------------------
+        */
+        if ($response->successful()) {
+            $category = $response->json()['candidates'][0]['content']['parts'][0]['text'] ?? 'Others';
+
+            // Clean up the response: trim whitespace and remove surrounding quotes
+            $category = trim($category, " \t\n\r\"'");
+
+            return $category ?: 'Others';
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Fallback on API Failure
+        |--------------------------------------------------------------------------
+        | If Gemini is unreachable, default to 'Others' so the complaint
+        | can still be stored successfully without blocking the user.
+        */
+        return 'Others';
+    }
 }

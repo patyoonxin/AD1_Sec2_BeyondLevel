@@ -14,6 +14,17 @@ return Application::configure(basePath: dirname(__DIR__))
 
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(\App\Http\Middleware\CorsMiddleware::class);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Custom Middleware Aliases
+        |--------------------------------------------------------------------------
+        | Register route middleware aliases so they can be referenced
+        | by a short name in route definitions (e.g., ->middleware('admin')).
+        */
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\EnsureAdmin::class,
+        ]);
     })
 
     ->withExceptions(function (Exceptions $exceptions): void {

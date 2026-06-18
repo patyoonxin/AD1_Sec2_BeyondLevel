@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axios from "axios";
-
+import { LanguageSwitcher } from '../../lang/i18n';
 
 const NAV_ITEMS = [
   {
@@ -13,7 +13,8 @@ const NAV_ITEMS = [
   {
     label: 'Modules',
     items: [
-      { path: '/admin/complaints',  label: 'Complaint Management',  icon: 'complaint',  badge: 5 },
+      { path: '/admin/complaints',  label: 'Complaint Management',  icon: 'complaint'},
+      { path: '/admin/categories',  label: 'Manage Categories',     icon: 'categories' },
       { path: '/admin/chatbot',     label: 'AI Chatbot',            icon: 'chatbot' },
       { path: '/admin/real-agent',  label: 'Real Agent',            icon: 'real-agent' },
       { path: '/admin/users',       label: 'User Management',       icon: 'users' },
@@ -273,6 +274,7 @@ function AdminLayout({ children }) {
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <LanguageSwitcher />
             {/* Bell */}
             <div style={{
               width: 32, height: 32, borderRadius: 8,

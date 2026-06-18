@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -58,4 +59,15 @@ class User extends Authenticatable
 
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
+    /**
+     * Get all complaints submitted by this user.
+     *
+     * Defines a one-to-many relationship with the Complaint model.
+     *
+     * @return HasMany<Complaint, $this>
+     */
+    public function complaints(): HasMany
+    {
+        return $this->hasMany(Complaint::class);
+    }
 }

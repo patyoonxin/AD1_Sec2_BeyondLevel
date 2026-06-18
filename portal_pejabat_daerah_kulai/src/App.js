@@ -23,12 +23,14 @@ import Navbar from './components/Common/Navbar';
 import AdminLayout from './components/Admin/AdminLayout';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import AdminComplaints from './pages/Admin/AdminComplaints';
+import AdminComplaintDetails from './pages/Admin/AdminComplaintDetails';
 import AdminChatbot from './pages/Admin/AdminChatbot';
 import AdminUsers from './pages/Admin/AdminUsers';
 import AdminFAQ from './pages/Admin/AdminFAQ';
 import AdminAnalytics from './pages/Admin/AdminAnalytics';
 import AdminRealAgent from './pages/Admin/AdminRealAgent';
 import AdminProfilePage from "./pages/Admin/AdminProfilePage";
+import AdminCategories from './pages/Admin/AdminCategories';
 
 // ── Guard: only admin role can access /admin/* ────────────────────────────────
 function AdminRoute({ component: Component }) {
@@ -196,7 +198,9 @@ function App() {
         {/* ── Admin routes (protected, with AdminLayout sidebar) ────── */}
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="/admin/dashboard"  element={<AdminRoute component={AdminDashboard} />} />
-        <Route path="/admin/complaints" element={<AdminRoute component={AdminComplaints} />} />
+        <Route path="/admin/complaints"      element={<AdminRoute component={AdminComplaints} />} />
+        <Route path="/admin/complaints/:id"  element={<AdminRoute component={AdminComplaintDetails} />} />
+        <Route path="/admin/categories"      element={<AdminRoute component={AdminCategories} />} />
         <Route path="/admin/chatbot"    element={<AdminRoute component={AdminChatbot} />} />
         <Route path="/admin/users"      element={<AdminRoute component={AdminUsers} />} />
         <Route path="/admin/faq"        element={<AdminRoute component={AdminFAQ} />} />
