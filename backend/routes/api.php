@@ -14,19 +14,41 @@
     use App\Http\Controllers\UserComplaintController;
     use App\Http\Controllers\AdminComplaintController;
     use App\Http\Controllers\ComplaintCategoryController;
-
     use App\Http\Controllers\ForgotPasswordController;
     use App\Http\Controllers\AdminProfileController;
     use App\Http\Controllers\DashboardController;
 
+    //Faq routes
+
+    // UC029: View FAQ List
+    Route::get('/faq', [FaqController::class, 'index']);
+    
+    // UC031: Search FAQ
+    Route::get('/faq/search', [FaqController::class, 'search']);
+    
+    // UC030: View FAQ Details
+    Route::get('/faq/{id}', [FaqController::class, 'show']);
+    
+    // FAQ categories
+    Route::get('/faq-categories', [FaqController::class, 'categories']);
+    
+    // UC032: Admin FAQ Management
+    Route::prefix('admin')->group(function () {
+        Route::get('/faq',          [FaqController::class, 'adminIndex']);
+        Route::post('/faq',         [FaqController::class, 'store']);
+        Route::put('/faq/{id}',     [FaqController::class, 'update']);
+        Route::delete('/faq/{id}',  [FaqController::class, 'destroy']);
+    });
+    
 
 
-//Faq routes
-Route::get('/faq', [FaqController::class, 'index']);
-Route::get('/faq/{id}', [FaqController::class, 'show']);
-Route::post('/faq', [FaqController::class, 'store']);
-Route::put('/faq/{id}', [FaqController::class, 'update']);
-Route::delete('/faq/{id}', [FaqController::class, 'destroy']);
+
+    //Faq routes
+    Route::get('/faq', [FaqController::class, 'index']);
+    Route::get('/faq/{id}', [FaqController::class, 'show']);
+    Route::post('/faq', [FaqController::class, 'store']);
+    Route::put('/faq/{id}', [FaqController::class, 'update']);
+    Route::delete('/faq/{id}', [FaqController::class, 'destroy']);
 
     //Chatbot route
     Route::post('/chat', [ChatbotController::class, 'chat']);

@@ -89,48 +89,7 @@
       "conclusion": "Jadwal pengambilan sampah akan disesuaikan untuk area ini."
     }
   ],
-  "faqs": [
-    {
-      "id": 1,
-      "question": "Bagaimana cara mengajukan aduan?",
-      "answer": "Anda dapat mengajukan aduan melalui portal ini dengan mengklik menu 'Aduan' kemudian klik tombol 'Aduan Baru'. Isi semua detail yang diperlukan termasuk lokasi dan lampiran jika ada. Sistem akan memberikan nomor referensi untuk melacak status aduan Anda."
-    },
-    {
-      "id": 2,
-      "question": "Berapa lama waktu untuk memproses aduan?",
-      "answer": "Waktu pemrosesan tergantung jenis aduan. Aduan rutin biasanya diproses dalam 5-7 hari kerja. Aduan mendesak dapat diproses lebih cepat. Anda dapat memantau status aduan Anda secara real-time melalui portal."
-    },
-    {
-      "id": 3,
-      "question": "Apakah saya perlu membuat akun untuk menggunakan portal?",
-      "answer": "Ya, Anda perlu membuat akun terlebih dahulu untuk dapat mengajukan aduan dan menggunakan semua fitur portal. Pendaftaran gratis dan cepat hanya memerlukan email dan kata sandi yang aman."
-    },
-    {
-      "id": 4,
-      "question": "Apa saja kategori aduan yang tersedia?",
-      "answer": "Kategori aduan yang tersedia adalah: Infrastruktur, Kebajikan Awam, Lesen, Kebersihan, dan Komunitas. Pilih kategori yang paling sesuai dengan jenis aduan Anda untuk memastikan penanganan yang tepat."
-    },
-    {
-      "id": 5,
-      "question": "Bagaimana jika saya lupa kata sandi?",
-      "answer": "Klik tautan 'Lupa Kata Sandi?' di halaman masuk. Masukkan email Anda dan kami akan mengirimkan instruksi untuk mengatur ulang kata sandi. Periksa folder spam jika email tidak muncul di inbox."
-    },
-    {
-      "id": 6,
-      "question": "Dapatkah saya melampirkan dokumen dengan aduan?",
-      "answer": "Ya, Anda dapat melampirkan dokumen pendukung seperti foto, PDF, atau dokumen lain untuk memperkuat aduan Anda. Ukuran file maksimal adalah 5MB dan format yang didukung adalah: PDF, JPG, PNG, dan DOCX."
-    },
-    {
-      "id": 7,
-      "question": "Siapa yang dapat mengakses data pribadi saya?",
-      "answer": "Data pribadi Anda hanya dapat diakses oleh petugas Pejabat Daerah Kulai yang berwenang untuk memproses aduan Anda. Data Anda dilindungi dengan enkripsi tingkat enterprise dan tidak akan dibagikan kepada pihak ketiga."
-    },
-    {
-      "id": 8,
-      "question": "Bagaimana hubungi customer support?",
-      "answer": "Anda dapat menghubungi tim support melalui: Email: support@kulai.gov.my | Telepon: +60-7-1234-5678 | Jam Layanan: Senin-Jumat, 08:00-17:00 | Atau gunakan chatbot AI kami yang tersedia 24/7."
-    }
-  ],
+
   "chatbot_conversations": [
     {
       "id": 1,
