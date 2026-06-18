@@ -10,6 +10,11 @@ import ChatbotPage from './pages/ChatbotPage';
 import ComplaintsPage from './pages/ComplaintsPage';
 import FAQPage from './pages/FAQPage';
 import RealAgent from './pages/RealAgent';
+import VerifyOtp from './pages/VerifyOtp';
+import ProfilePage from './pages/ProfilePage';
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+
 
 // Existing components
 import Navbar from './components/Common/Navbar';
@@ -24,6 +29,7 @@ import AdminUsers from './pages/Admin/AdminUsers';
 import AdminFAQ from './pages/Admin/AdminFAQ';
 import AdminAnalytics from './pages/Admin/AdminAnalytics';
 import AdminRealAgent from './pages/Admin/AdminRealAgent';
+import AdminProfilePage from "./pages/Admin/AdminProfilePage";
 import AdminCategories from './pages/Admin/AdminCategories';
 
 // ── Guard: only admin role can access /admin/* ────────────────────────────────
@@ -107,6 +113,11 @@ function App() {
           }
         />
         <Route
+          path="/verify-otp"
+          element={<VerifyOtp />
+          }
+        />
+        <Route
           path="/login"
           element={
             <PublicRoute>
@@ -160,6 +171,29 @@ function App() {
             </>
           }
         />
+        <Route 
+          path="/profile"
+          element={
+              <ProfilePage setUser={handleSetUser} />}  />
+
+        <Route
+          path="/forgot-password"
+          element={
+            <>
+              <Navbar user={user} setUser={handleSetUser} />
+              <ForgotPassword />
+            </>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <>
+              <Navbar user={user} setUser={handleSetUser} />
+              <ResetPassword />
+            </>
+          }
+        />
 
         {/* ── Admin routes (protected, with AdminLayout sidebar) ────── */}
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
@@ -172,6 +206,7 @@ function App() {
         <Route path="/admin/faq"        element={<AdminRoute component={AdminFAQ} />} />
         <Route path="/admin/analytics"  element={<AdminRoute component={AdminAnalytics} />} />
         <Route path="/admin/real-agent" element={<AdminRoute component={AdminRealAgent} />} />
+        <Route path="/admin/profile" element={<AdminRoute component={AdminProfilePage} />} />        
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

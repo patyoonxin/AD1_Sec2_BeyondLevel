@@ -76,4 +76,23 @@ class ChatConversationController extends Controller
             'message' => 'Conversation closed successfully'
         ]);
     }
+
+
+    public function userConversations($userId)
+    {
+        $conversations = ChatConversation::where('user_id', $userId)
+            ->get();
+
+        return response()->json($conversations);
+    }
+
+    public function hasConversation($userId)
+    {
+        $hasConversation = ChatConversation::where('user_id', $userId)
+            ->exists();
+
+        return response()->json([
+            'hasConversation' => $hasConversation
+        ]);
+    }
 }

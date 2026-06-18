@@ -5,48 +5,29 @@
  */
 
 import databaseService from '../data/databaseService';
+import axios from "axios";
+
 
 // ============================================
 // AUTH ENDPOINTS (JSON Database)
 // ============================================
 export const authAPI = {
-  login: async (phoneNo, password) => {
-    try {
-      const user = await databaseService.authenticateUser(phoneNo, password);
-      if (!user) {
-        throw new Error('Invalid phone number or password');
-      }
-      const token = databaseService.generateMockToken();
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('userId', user.id);
-      return {
-        data: {
-          user,
-          token,
-          message: 'Login successful'
-        }
-      };
-    } catch (error) {
-      throw error;
-    }
+  login: async (payload) => {
+    return axios.post("http://127.0.0.1:8000/api/login", payload);
   },
 
-  register: async (name, phoneNo, password) => {
-    try {
-      const user = await databaseService.registerUser({
-        name,
-        phoneNo,
-        password
-      });
-      return {
-        data: {
-          user,
-          message: 'Registration successful'
-        }
-      };
-    } catch (error) {
-      throw error;
-    }
+   register: async (name, phoneNo, password, password_confirmation) => {
+    const response = await axios.post(
+      "http://127.0.0.1:8000/api/register",
+      {
+        name: name,
+        phone_number: phoneNo,
+        password: password,
+        password_confirmation: password_confirmation
+      }
+    );
+
+    return response;
   },
 
   logout: async () => {
@@ -72,6 +53,20 @@ export const authAPI = {
   changePassword: async (data) => {
     // For JSON DB, just acknowledge (not persisted)
     return { data: { message: 'Password changed successfully' } };
+  },
+
+  sendOtp: async (phoneNo) => {
+  return axios.post("http://127.0.0.1:8000/api/send-otp", {
+    phone_number: phoneNo
+  });
+  },
+
+  resetPassword: async (data) => {
+  return axios.post("http://127.0.0.1:8000/api/reset-password", {
+    phone_number: data.phone_number,
+    otp: data.otp,
+    password: data.password
+  });
   }
 };
 
@@ -147,6 +142,20 @@ export const complaintAPI = {
     }
 
     return { data: normalizeComplaint(data.complaint || data) };
+  },
+
+  /**
+   * Request an AI-powered category suggestion from the Gemini backend.
+   */
+  suggestCategory: async (description, categoryNames = []) => {
+    const res = await fetch(`${API_BASE_URL}/complaints/suggest-category`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ description, categories: categoryNames }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message || 'Failed to get suggestion');
+    return { data };
   },
 
   /**
@@ -382,43 +391,91 @@ export const chatbotAPI = {
   }
 };
 
-// ============================================
-// FAQ ENDPOINTS (JSON Database)
-// ============================================
+// ============================================================
+// FAQ ENDPOINTS (Laravel Backend)
+// ============================================================
 export const faqAPI = {
+  // UC029: View FAQ List (public)
   getAllFAQs: async () => {
-    try {
-      const faqs = await databaseService.getAllFAQs();
-      return { data: faqs };
-    } catch (error) {
-      throw error;
-    }
+    const response = await fetch(`http://127.0.0.1:8000/api/faq`);
+    const data = await response.json();
+    return { data: data.data || [] };
   },
 
+  // UC031: Search FAQ
   searchFAQs: async (query) => {
-    try {
-      const faqs = query 
-        ? await databaseService.searchFAQs(query)
-        : await databaseService.getAllFAQs();
-      return { data: faqs };
-    } catch (error) {
-      throw error;
+    if (!query.trim()) {
+      return {
+        data: [],
+        has_data: false,
+        message: "Search field cannot be empty",
+      };
     }
+    const response = await fetch(
+      `http://127.0.0.1:8000/api/faq/search?q=${encodeURIComponent(query)}`,
+    );
+    const data = await response.json();
+    return {
+      data: data.data || [],
+      has_data: data.has_data || false,
+      message: data.message || "",
+    };
   },
 
+  // UC032: Admin - Get ALL FAQs including drafts
+  adminGetAllFAQs: async () => {
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(`http://127.0.0.1:8000/api/admin/faq`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await response.json();
+    return { data: data.data || [] };
+  },
+
+  // UC032: Add FAQ
   addFAQ: async (faqData) => {
-    return { data: { message: 'FAQ added' } };
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(`http://127.0.0.1:8000/api/admin/faq`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(faqData),
+    });
+    return response.json();
   },
 
+  // UC032: Update FAQ
   updateFAQ: async (faqId, faqData) => {
-    return { data: { message: 'FAQ updated' } };
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(
+      `http://127.0.0.1:8000/api/admin/faq/${faqId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(faqData),
+      },
+    );
+    return response.json();
   },
 
+  // UC032: Delete FAQ
   deleteFAQ: async (faqId) => {
-    return { data: { message: 'FAQ deleted' } };
-  }
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(
+      `http://127.0.0.1:8000/api/admin/faq/${faqId}`,
+      {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+    return response.json();
+  },
 };
-
 // ============================================
 // COMPLAINT CATEGORY ENDPOINTS (Laravel Backend)
 // ============================================
@@ -532,6 +589,16 @@ export const chatAPI = {
   getMessages: async (conversationId) => {
     const res = await fetch(
       `http://127.0.0.1:8000/api/messages/${conversationId}`
+    );
+
+    return res.json();
+  },
+
+  // check if user has sent any messages
+  checkUserHasConversation: async (userId) => {
+    const res = await fetch(
+      // `http://127.0.0.1:8000/api/messages?sender_id=${userId}`
+      `http://127.0.0.1:8000/api/conversations/has/${userId}`
     );
 
     return res.json();

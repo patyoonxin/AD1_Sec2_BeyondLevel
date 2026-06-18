@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import axios from "axios";
 import { LanguageSwitcher } from '../../lang/i18n';
 
 const NAV_ITEMS = [
@@ -15,10 +16,12 @@ const NAV_ITEMS = [
       { path: '/admin/complaints',  label: 'Complaint Management',  icon: 'complaint'},
       { path: '/admin/categories',  label: 'Manage Categories',     icon: 'categories' },
       { path: '/admin/chatbot',     label: 'AI Chatbot',            icon: 'chatbot' },
-      { path: '/admin/real-agent',  label: 'Real Agent',            icon: 'real-agent' },
+      { path: '/admin/real-agent',  label: 'Real Agent',            icon: 'chatbot' },
       { path: '/admin/users',       label: 'User Management',       icon: 'users' },
       { path: '/admin/faq',         label: 'FAQs & Knowledge Base', icon: 'faq' },
       { path: '/admin/analytics',   label: 'Analytics & Reports',   icon: 'analytics' },
+      { path: '/admin/profile',     label: 'My Profile',            icon: 'profile' },
+
     ],
   },
 ];
@@ -65,12 +68,10 @@ function NavIcon({ name }) {
         <path d="M2 12L6 8l3 3 5-6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
-    categories: (
+    profile: (
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
-        <rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
-        <rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
-        <rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
-        <rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.3" />
+        <circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.3" />
+        <path d="M2 13c0-2.761 2.686-5 6-5s6 2.239 6 5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
       </svg>
     ),
   };
@@ -79,6 +80,32 @@ function NavIcon({ name }) {
 
 function AdminLayout({ children }) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+
+  const getInitials = (name) => {
+    if (!name) return "";
+    return name
+      .split(" ")
+      .map(word => word[0])
+      .join("")
+      .toUpperCase();
+  };
+
+  useEffect(() => {
+    axios.get("http://127.0.0.1:8000/api/profile", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      }
+    })
+    .then(res => {
+  console.log(res.data); // check structure
+  setUser(res.data.user ?? res.data.data ?? res.data);
+})
+    .catch(err => console.error(err));
+  }, []);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   const isActive = (path) => location.pathname === path;
 
   return (
@@ -172,22 +199,54 @@ function AdminLayout({ children }) {
         </nav>
 
         {/* Admin user */}
-        <div style={{ padding: '14px 20px', borderTop: '1px solid #eceae4' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: '50%',
-              background: '#1a4fa0', color: '#c8ddf5',
-              fontSize: 11, fontWeight: 600,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              AM
-            </div>
-            <div>
-              <div style={{ fontSize: 12, fontWeight: 600, color: '#1a1a1a' }}>Ahmad Mazlan</div>
-              <div style={{ fontSize: 10, color: '#aaa89e' }}>Super Admin</div>
-            </div>
-          </div>
-        </div>
+<div style={{ padding: '14px 20px', borderTop: '1px solid #eceae4' }}>
+  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+    
+    <div
+      onClick={() => navigate('/admin/profile')}
+      style={{
+        width: 32,
+        height: 32,
+        borderRadius: '50%',
+        background: '#1a4fa0',
+        color: '#c8ddf5',
+        fontSize: 11,
+        fontWeight: 600,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+      }}
+    >
+      {getInitials(user?.name) || "..." }
+    </div>
+
+    <div style={{ flex: 1 }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: '#1a1a1a' }}>
+        {user?.name || "Loading..."}
+      </div>
+      <div style={{ fontSize: 10, color: '#aaa89e' }}>
+        {user?.role || "—"}
+      </div>
+    </div>
+
+    {/* Logout button */}
+    <div
+      onClick={() => {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('user');
+        window.location.href = '/login'; // hard reload clears all state
+      }}
+      title="Logout"
+      style={{ cursor: 'pointer', color: '#aaa89e', fontSize: 14 }}
+    >
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M11 11l3-3-3-3M14 8H6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </div>
+  </div>
+</div>
       </aside>
 
       {/* ── Main ────────────────────────────────────────────────── */}
@@ -237,8 +296,10 @@ function AdminLayout({ children }) {
               fontSize: 11, fontWeight: 600,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              AM
+              {getInitials(user?.name) || "..."}
             </div>
+
+            
           </div>
         </header>
 

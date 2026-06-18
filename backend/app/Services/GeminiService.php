@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class GeminiService
 {
@@ -91,7 +92,7 @@ class GeminiService
         */
 
         $response = Http::post(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={$apiKey}",
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}",
             [
                 "contents" => [
                     [
@@ -132,57 +133,110 @@ class GeminiService
      * Sends the complaint text to Gemini and asks it to predict the most
      * appropriate category from a predefined list relevant to local council services.
      *
-     * @param  string  $description  The complaint description provided by the user.
+     * @param  string  $description    The complaint description provided by the user.
+     * @param  array   $categoryNames  Live category names from the DB (optional).
      * @return string  The predicted category name.
      */
-    public function categorizeComplaint(string $description): string
+    public function categorizeComplaint(string $description, array $categoryNames = []): string
     {
         $apiKey = env('GEMINI_API_KEY');
 
         /*
         |--------------------------------------------------------------------------
-        | Categorization Prompt
+        | Load active categories + synonyms from the database
         |--------------------------------------------------------------------------
-        | Instructs Gemini to classify the complaint into one of the predefined
-        | categories relevant to Pejabat Daerah Kulai / Majlis Bandaraya services.
-        | The response must be ONLY the category name, nothing else.
+        | Each category may have a JSON array of synonyms (alternative names).
+        | We build:
+        |   $canonicalMap  — every known term → canonical DB name
+        |   $promptList    — list of canonical names for the Gemini prompt
         */
+        $dbCategories = \App\Models\ComplaintCategory::where('is_active', true)
+            ->orderBy('name')
+            ->get(['name', 'synonyms']);
+
+        $canonicalMap  = [];
+        $promptNames   = [];
+        $categoryLines = [];
+
+        foreach ($dbCategories as $cat) {
+            $canonical = $cat->name;
+            $promptNames[] = $canonical;
+            $canonicalMap[mb_strtolower($canonical)] = $canonical;
+
+            // Ensure synonyms is always an array — partial selects can bypass model casts
+            $synonyms = $cat->synonyms;
+            if (is_string($synonyms)) {
+                $synonyms = json_decode($synonyms, true) ?? [];
+            }
+            $synonyms = $synonyms ?: [];
+
+            foreach ($synonyms as $syn) {
+                $canonicalMap[mb_strtolower(trim($syn))] = $canonical;
+            }
+
+            // Build a prompt line that includes synonyms as hints for Gemini
+            if (!empty($synonyms)) {
+                $synList = implode(', ', $synonyms);
+                $categoryLines[] = "- {$canonical} (also known as: {$synList})";
+            } else {
+                $categoryLines[] = "- {$canonical}";
+            }
+        }
+
+        // Fall back to a static list when the table is empty
+        if (empty($promptNames)) {
+            $promptNames = [
+                'Road Damage', 'Waste Management', 'Drainage / Flooding',
+                'Street Lighting', 'Illegal Parking', 'Public Facility Damage',
+                'Noise Complaint', 'Illegal Dumping', 'Health & Sanitation',
+                'Traffic Safety', 'Others',
+            ];
+            foreach ($promptNames as $n) {
+                $canonicalMap[mb_strtolower($n)] = $n;
+                $categoryLines[] = "- {$n}";
+            }
+        }
+
+        $categoryList = implode("\n", $categoryLines);
+        $fallback = $canonicalMap['others'] ?? $promptNames[count($promptNames) - 1];
+
         $prompt = "You are a complaint categorization assistant for Pejabat Daerah Kulai.
 
 Analyze the following complaint description and classify it into EXACTLY ONE of these categories:
-- Road Damage
-- Waste Management
-- Drainage / Flooding
-- Street Lighting
-- Illegal Parking
-- Public Facility Damage
-- Noise Complaint
-- Illegal Dumping
-- Health & Sanitation
-- Traffic Safety
-- Others
+{$categoryList}
 
 Rules:
-1. Reply with ONLY the exact category name from the list above.
+1. Reply with ONLY the exact category name (the part before any parenthesis) from the list above.
 2. Do not add explanations, punctuation, or extra words.
-3. If none fit well, reply with 'Others'.
+3. Use the 'also known as' hints to help match keywords in the description.
+4. If none fit well, reply with '{$fallback}'.
 
 Complaint Description: {$description}";
 
-        $response = Http::post(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={$apiKey}",
-            [
-                "contents" => [
-                    [
-                        "parts" => [
-                            [
-                                "text" => $prompt
-                            ]
-                        ]
+        $payload = [
+            "contents" => [
+                [
+                    "parts" => [
+                        ["text" => $prompt]
                     ]
                 ]
             ]
-        );
+        ];
+
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key={$apiKey}";
+
+        // Retry up to 2 times on 429 rate-limit with increasing delay
+        $response  = null;
+        $attempts  = 0;
+        $maxRetries = 2;
+
+        do {
+            if ($attempts > 0) {
+                sleep($attempts * 2);
+            }
+            $response = Http::timeout(15)->withoutVerifying()->post($url, $payload);
+            $attempts++;
+        } while ($response->status() === 429 && $attempts <= $maxRetries);
 
         /*
         |--------------------------------------------------------------------------
@@ -190,21 +244,24 @@ Complaint Description: {$description}";
         |--------------------------------------------------------------------------
         */
         if ($response->successful()) {
-            $category = $response->json()['candidates'][0]['content']['parts'][0]['text'] ?? 'Others';
+            $raw = $response->json()['candidates'][0]['content']['parts'][0]['text'] ?? '';
+            $raw = trim($raw, " \t\n\r\"'");
 
-            // Clean up the response: trim whitespace and remove surrounding quotes
-            $category = trim($category, " \t\n\r\"'");
+            // Resolve via canonicalMap: handles exact name, synonyms, and case differences
+            $resolved = $canonicalMap[mb_strtolower($raw)] ?? null;
 
-            return $category ?: 'Others';
+            Log::debug('Gemini categorize', [
+                'raw'      => $raw,
+                'resolved' => $resolved,
+            ]);
+
+            return $resolved ?: $fallback;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Fallback on API Failure
-        |--------------------------------------------------------------------------
-        | If Gemini is unreachable, default to 'Others' so the complaint
-        | can still be stored successfully without blocking the user.
-        */
-        return 'Others';
+        if ($response->status() === 429) {
+            throw new \RuntimeException('Gemini rate limit exceeded. Please wait a moment before trying again.');
+        }
+
+        throw new \RuntimeException('Gemini API returned a non-successful response: ' . $response->status());
     }
 }

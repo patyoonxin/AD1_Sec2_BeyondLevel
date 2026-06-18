@@ -6,6 +6,8 @@ use App\Models\Complaint;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Services\GeminiService;
+use Illuminate\Support\Facades\Log;
 
 class UserComplaintController extends Controller
 {
@@ -88,11 +90,14 @@ class UserComplaintController extends Controller
         | Associates the complaint with the currently authenticated user.
         | The category is the user-selected value from the dynamic categories.
         */
+        $categoryModel = \App\Models\ComplaintCategory::where('name', $validated['category'])->first();
+
         $complaint = Complaint::create([
             'record_id'    => $recordId,
             'user_id'      => $validated['user_id'],
             'title'        => $validated['title'],
             'category'     => $validated['category'],
+            'category_id'  => $categoryModel?->id,
             'description'  => $validated['description'],
             'location'     => $validated['location'],
             'attachments'  => $attachmentUrls,
@@ -205,5 +210,44 @@ class UserComplaintController extends Controller
         $complaints = $query->orderBy('created_at', 'desc')->get();
 
         return response()->json($complaints);
+    }
+
+    /**
+     * Suggest a complaint category using the Gemini AI service.
+     *
+     * Accepts a complaint description and returns the predicted category.
+     *
+     * @param  Request  $request
+     * @return JsonResponse
+     */
+    public function suggestCategory(Request $request): JsonResponse
+    {
+        $request->validate([
+            'description' => ['required', 'string', 'min:10'],
+        ]);
+
+        // Verify the Gemini API key is configured
+        if (empty(env('GEMINI_API_KEY'))) {
+            return response()->json([
+                'message' => 'AI categorisation service is not configured.',
+            ], 503);
+        }
+
+        try {
+            $gemini = new GeminiService();
+            $categoryNames = $request->input('categories', []);
+            $category = $gemini->categorizeComplaint($request->input('description'), $categoryNames);
+
+            return response()->json(['category' => $category]);
+        } catch (\Throwable $e) {
+            Log::error('Gemini suggestCategory failed: ' . $e->getMessage());
+            $isRateLimit = str_contains($e->getMessage(), 'rate limit');
+            return response()->json([
+                'message' => $isRateLimit
+                    ? 'Rate limit reached. Please wait a moment and try again.'
+                    : 'AI categorisation service unavailable.',
+                'debug'   => $e->getMessage(),
+            ], 503);
+        }
     }
 }
