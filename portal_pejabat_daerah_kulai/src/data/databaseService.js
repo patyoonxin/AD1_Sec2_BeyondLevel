@@ -1,142 +1,260 @@
-// Database utility to work with JSON data
-import db from './db.json';
+// Database utility — connects to Laravel + MySQL backend
+import axios from "axios";
 
-// Simulated delay for realistic API behavior
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_URL, 
+});
+
+// Auto-attach Sanctum token ke setiap request
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 
 export const databaseService = {
-  // USER OPERATIONS
+  // ─── USER / AUTH ────────────────────────────────────────────────────────────
+
+  // Tiada endpoint cari user by phone di frontend — guna authenticateUser sahaja
   async findUserByphoneNo(phoneNo) {
-    await delay(200);
-    return db.users.find(user => user.phoneNo === phoneNo) || null;
+    // Endpoint ini hanya ada di admin, frontend tak perlu cari user by phone terus
+    // Gantikan usage dengan authenticateUser atau findUserById
+    console.warn("findUserByphoneNo: tiada endpoint — guna authenticateUser");
+    return null;
   },
 
   async findUserById(id) {
-    await delay(200);
-    return db.users.find(user => user.id === id) || null;
+    try {
+      const res = await api.get(`/users/${id}`); // GET /users/{id} (auth:sanctum)
+      return res.data;
+    } catch (err) {
+      if (err.response?.status === 404) return null;
+      throw err;
+    }
   },
 
   async authenticateUser(phoneNo, password) {
-    await delay(300);
-    const user = db.users.find(user => user.phoneNo === phoneNo && user.password === password);
-    if (user) {
-      const { password, ...userWithoutPassword } = user;
-      return userWithoutPassword;
+    try {
+      const res = await api.post("/login", { phoneNo, password }); // POST /login
+      if (res.data.token) localStorage.setItem("token", res.data.token);
+      return res.data.user ?? res.data;
+    } catch (err) {
+      if (err.response?.status === 401) return null;
+      throw err;
     }
-    return null;
   },
 
   async registerUser(userData) {
-    await delay(300);
-    const existingUser = db.users.find(user => user.phoneNo === userData.phoneNo);
-    if (existingUser) {
-      throw new Error('Phone number already registered');
+    try {
+      const res = await api.post("/register", userData); // POST /register
+      return res.data.user ?? res.data;
+    } catch (err) {
+      if (err.response?.status === 422) {
+        throw new Error("Phone number already registered");
+      }
+      throw err;
     }
-
-    const newUser = {
-      id: Math.max(...db.users.map(u => u.id)) + 1,
-      ...userData,
-      created_at: new Date().toISOString(),
-      role: 'user'
-    };
-
-    db.users.push(newUser);
-    const { password, ...userWithoutPassword } = newUser;
-    return userWithoutPassword;
   },
 
-  // COMPLAINT OPERATIONS
-  async getComplaintsByUserId(userId) {
-    await delay(200);
-    return db.complaints.filter(complaint => complaint.user_id === userId);
+  // OTP (untuk register / forgot password)
+  async sendOtp(phoneNo) {
+    const res = await api.post("/send-otp", { phoneNo }); // POST /send-otp
+    return res.data;
   },
 
-  async getAllComplaints() {
-    await delay(200);
-    return db.complaints;
+  async verifyOtp(phoneNo, otp) {
+    const res = await api.post("/verify-otp", { phoneNo, otp }); // POST /verify-otp
+    return res.data;
+  },
+
+  // ─── PROFILE ────────────────────────────────────────────────────────────────
+
+  async getProfile() {
+    const res = await api.get("/profile"); // GET /profile (auth:sanctum)
+    return res.data;
+  },
+
+  async updateProfile(profileData) {
+    const res = await api.put("/profile", profileData); // PUT /profile (auth:sanctum)
+    return res.data;
+  },
+
+  async changePassword(passwordData) {
+    const res = await api.post("/change-password", passwordData); // POST /change-password
+    return res.data;
+  },
+
+  // ─── COMPLAINT (USER) ───────────────────────────────────────────────────────
+
+  async getComplaintsByUserId() {
+    // Laravel guna token untuk tahu user mana — tak perlu pass userId terus
+    const res = await api.get("/complaints"); // GET /complaints
+    return res.data;
   },
 
   async getComplaintById(id) {
-    await delay(200);
-    return db.complaints.find(complaint => complaint.id === id) || null;
+    try {
+      const res = await api.get(`/complaints/${id}`); // GET /complaints/{id}
+      return res.data;
+    } catch (err) {
+      if (err.response?.status === 404) return null;
+      throw err;
+    }
   },
 
-  async submitComplaint(complaintData, userId) {
-    await delay(400);
-    const newComplaint = {
-      id: Math.max(...db.complaints.map(c => c.id), 0) + 1,
-      user_id: userId,
-      ...complaintData,
-      status: 'pending',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
+  async submitComplaint(complaintData) {
+    const res = await api.post("/complaints", complaintData); // POST /complaints
+    return res.data;
+  },
 
-    db.complaints.push(newComplaint);
-    return newComplaint;
+  async searchComplaints(params) {
+    const res = await api.get("/complaints/search", { params }); // GET /complaints/search
+    return res.data;
+  },
+
+  async suggestComplaintCategory(description) {
+    const res = await api.post("/complaints/suggest-category", { description }); // POST /complaints/suggest-category
+    return res.data;
+  },
+
+  // ─── COMPLAINT (ADMIN) ──────────────────────────────────────────────────────
+
+  async getAllComplaints(params) {
+    const res = await api.get("/admin/complaints", { params }); // GET /admin/complaints
+    return res.data;
+  },
+
+  async getComplaintByIdAdmin(id) {
+    const res = await api.get(`/admin/complaints/${id}`); // GET /admin/complaints/{id}
+    return res.data;
   },
 
   async updateComplaintStatus(complaintId, status) {
-    await delay(300);
-    const complaint = db.complaints.find(c => c.id === complaintId);
-    if (complaint) {
-      complaint.status = status;
-      complaint.updated_at = new Date().toISOString();
-      return complaint;
+    try {
+      const res = await api.patch(`/admin/complaints/${complaintId}/status`, {
+        status,
+      }); // PATCH /admin/complaints/{id}/status
+      return res.data;
+    } catch (err) {
+      if (err.response?.status === 404) return null;
+      throw err;
     }
-    return null;
   },
 
-  // FAQ OPERATIONS
+  async respondToComplaint(complaintId, responseData) {
+    const res = await api.post(
+      `/admin/complaints/${complaintId}/respond`,
+      responseData,
+    ); // POST /admin/complaints/{id}/respond
+    return res.data;
+  },
+
+  // ─── COMPLAINT CATEGORIES ───────────────────────────────────────────────────
+
+  async getActiveCategories() {
+    const res = await api.get("/complaint-categories/active"); // GET /complaint-categories/active
+    return res.data;
+  },
+
+  // ─── FAQ ────────────────────────────────────────────────────────────────────
+
   async getAllFAQs() {
-    await delay(200);
-    return db.faqs;
+    const res = await api.get("/faq"); // GET /faq
+    return res.data;
+  },
+
+  async getFAQById(id) {
+    const res = await api.get(`/faq/${id}`); // GET /faq/{id}
+    return res.data;
   },
 
   async searchFAQs(keyword) {
-    await delay(300);
-    const lowerKeyword = keyword.toLowerCase();
-    return db.faqs.filter(faq =>
-      faq.question.toLowerCase().includes(lowerKeyword) ||
-      faq.answer.toLowerCase().includes(lowerKeyword)
-    );
+    const res = await api.get("/faq/search", { params: { q: keyword } }); // GET /faq/search
+    return res.data;
   },
 
-  // CHATBOT OPERATIONS
+  async getFAQCategories() {
+    const res = await api.get("/faq-categories"); // GET /faq-categories
+    return res.data;
+  },
+
+  // ─── CHATBOT ────────────────────────────────────────────────────────────────
+
   async getChatbotResponse(userMessage) {
-    await delay(500);
-    // Simple rule-based responses
-    const message = userMessage.toLowerCase();
-
-    const responses = {
-      aduan: "Untuk mengajukan aduan, silahkan ikuti langkah-langkah berikut:\n1. Masuk ke akun Anda\n2. Klik menu 'Aduan'\n3. Klik tombol 'Aduan Baru'\n4. Isi formulir dengan detail lengkap\n5. Klik 'Hantar Aduan'",
-      lama: "Waktu pemrosesan tergantung jenis aduan. Aduan rutin biasanya diproses dalam 5-7 hari kerja. Anda dapat memantau status aduan Anda secara real-time melalui portal.",
-      akun: "Ya, Anda perlu membuat akun untuk mengajukan aduan dan menggunakan semua fitur portal. Pendaftaran gratis dan cepat.",
-      kategori: "Kategori aduan yang tersedia adalah: Infrastruktur, Kebajikan Awam, Lesen, Kebersihan, dan Komunitas.",
-      password: "Klik tautan 'Lupa Kata Sandi?' di halaman masuk. Kami akan mengirimkan instruksi ke email Anda.",
-      lampir: "Ya, Anda dapat melampirkan dokumen dengan ukuran maksimal 5MB. Format yang didukung: PDF, JPG, PNG, DOCX.",
-      hubung: "Hubungi kami melalui:\nEmail: support@kulai.gov.my\nTelepon: +60-7-1234-5678\nJam: Senin-Jumat, 08:00-17:00"
-    };
-
-    for (const [keyword, response] of Object.entries(responses)) {
-      if (message.includes(keyword)) {
-        return response;
-      }
-    }
-
-    return "Maaf, saya tidak dapat memahami pertanyaan Anda. Silakan hubungi tim support kami di support@kulai.gov.my untuk bantuan lebih lanjut.";
+    const res = await api.post("/chat", { message: userMessage }); // POST /chat
+    return res.data.response ?? res.data;
   },
 
-  // STATISTICS
+  // ─── CONVERSATIONS (REAL AGENT) ─────────────────────────────────────────────
+
+  async createConversation(data) {
+    const res = await api.post("/conversations", data); // POST /conversations
+    return res.data;
+  },
+
+  async getConversations() {
+    const res = await api.get("/conversations"); // GET /conversations
+    return res.data;
+  },
+
+  async getConversationById(id) {
+    const res = await api.get(`/conversations/${id}`); // GET /conversations/{id}
+    return res.data;
+  },
+
+  async hasConversation(userId) {
+    const res = await api.get(`/conversations/has/${userId}`); // GET /conversations/has/{userId}
+    return res.data;
+  },
+
+  async sendMessage(messageData) {
+    const res = await api.post("/messages", messageData); // POST /messages
+    return res.data;
+  },
+
+  async getMessages(conversationId) {
+    const res = await api.get(`/messages/${conversationId}`); // GET /messages/{conversationId}
+    return res.data;
+  },
+
+  async markMessagesAsRead(conversationId) {
+    const res = await api.patch(`/messages/${conversationId}/read`); // PATCH /messages/{conversationId}/read
+    return res.data;
+  },
+
+  // ─── ANALYTICS (ADMIN) ──────────────────────────────────────────────────────
+
   async getStatistics() {
-    await delay(200);
-    return db.statistics;
+    const res = await api.get("/dashboard/stats"); // GET /dashboard/stats
+    return res.data;
   },
 
-  // HELPER: Get mock token
-  generateMockToken() {
-    return 'mock_token_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-  }
+  async getAnalyticsSummary() {
+    const res = await api.get("/admin/analytics/summary"); // GET /admin/analytics/summary
+    return res.data;
+  },
+
+  async generateAnalyticsReport(params) {
+    const res = await api.get("/admin/analytics/generate", { params }); // GET /admin/analytics/generate
+    return res.data;
+  },
+
+  async exportAnalyticsReport(data) {
+    const res = await api.post("/admin/analytics/export", data); // POST /admin/analytics/export
+    return res.data;
+  },
+
+  // ─── FORGOT PASSWORD ────────────────────────────────────────────────────────
+
+  async forgotPasswordSendOtp(phoneNo) {
+    const res = await api.post("/auth/forgot-password/send-otp", { phoneNo });
+    return res.data;
+  },
+
+  async forgotPasswordReset(data) {
+    const res = await api.post("/auth/forgot-password/reset", data);
+    return res.data;
+  },
 };
 
 export default databaseService;
