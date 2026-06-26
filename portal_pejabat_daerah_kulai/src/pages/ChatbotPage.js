@@ -5,13 +5,15 @@ import {
   ChatBubbleLeftRightIcon,
   ArrowPathIcon,
 } from "@heroicons/react/24/solid";
+import { useTranslation } from "../lang/i18n";
 
 function ChatbotPage() {
   const navigate = useNavigate();
+   const { t } = useTranslation();
   const [messages, setMessages] = useState([
     {
       id: 1,
-      text: 'Hello! 👋 How can I help you today?',
+      text: t('hello-how-help', 'Hello! 👋 How can I help you today?'),
       sender: 'bot',
       timestamp: new Date(),
     },
@@ -112,10 +114,8 @@ function ChatbotPage() {
       // DETECT "UNKNOWN / FAIL ANSWER"
       // ===============================
       const isUnknown =
-        replyText.toLowerCase().includes("sorry") ||
-        replyText.toLowerCase().includes("cannot") ||
-        replyText.toLowerCase().includes("don't know") ||
-        replyText.toLowerCase().includes("unable") ||
+        replyText.toLowerCase().includes("contact a real agent") ||
+        replyText.toLowerCase().includes("hubungi ejen sebenar") ||
         replyText.trim() === '';
 
       const botMessage = {
@@ -134,7 +134,7 @@ function ChatbotPage() {
       // ===============================
       const errorMessage = {
         id: Date.now() + 1,
-        text: "Sorry, I'm unable to process your request right now.",
+        text: t("api-error", "Sorry, I'm unable to process your request right now."),
         sender: 'bot',
         timestamp: new Date(),
         showAgentButton: true,
@@ -153,10 +153,10 @@ function ChatbotPage() {
       {/* HEADER */}
       {<div className="bg-white border-b border-gray-200 shadow-sm p-6">
         <h2 className="text-2xl font-bold text-gray-900">
-          AI-Chatbots & Assistants
+          {t("ai-chatbots-assistants", "AI-Chatbots & Assistants")}
         </h2>
         <p className="text-sm text-gray-600 mt-1">
-          Smart customer service available 24/7
+          {t("smart-customer-service", "Smart customer service available 24/7")}
         </p>
       </div> }
 
@@ -186,7 +186,7 @@ function ChatbotPage() {
                   className="flex mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm"
                 >
                   <ChatBubbleLeftRightIcon className="h-5 w-5 mr-2" />
-                  Contact Live Agent
+                  {t("contact-live-agent", "Contact Live Agent")}
                 </button>
               )}
                </div>
@@ -222,7 +222,7 @@ function ChatbotPage() {
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Type your question..."
+            placeholder={t("type-your-message", "Type your message here...")}
             className="form-input flex-1"
             disabled={loading}
           />
@@ -232,7 +232,7 @@ function ChatbotPage() {
             disabled={loading}
             className="btn btn-primary"
           >
-            {loading ? <ArrowPathIcon className="h-5 w-5 mr-2 animate-spin" /> : 'Send'}
+            {loading ? <ArrowPathIcon className="h-5 w-5 mr-2 animate-spin" /> : t('send', 'Send')}
           </button>
         </form>
       </div>

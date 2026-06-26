@@ -94,6 +94,7 @@
   "real_agent": "Ejen Sebenar",
   "home": "Laman Utama",
   "profile": "Profil",
+  "my-requests": "Permintaan Saya",
   "settings": "Tetapan",
   "notification": "Pemberitahuan",
   "submitter": "Pengadu",
@@ -186,5 +187,13 @@
   "edit_category": "Edit Kategori",
   "confirm_delete": "Sahkan Padam",
   "delete_category_warning": "Adakah anda pasti mahu memadam kategori ini? Tindakan ini tidak boleh dibatalkan.",
-  "saving": "Menyimpan..."
+  "saving": "Menyimpan...",
+
+  "ai-chatbots-assistants": "Chatbot & Pembantu AI",
+  "smart-customer-service": "Perkhidmatan pelanggan pintar tersedia 24/7",
+  "type-your-message": "Taip mesej anda di sini...",
+  "hello-how-help": "Hello! 👋 Bagaimana saya boleh membantu anda hari ini?",
+  "api-error": "Maaf, saya tidak dapat memproses permintaan anda sekarang.",
+  "contact-live-agent": "Hubungi Ejen Sebenar"
+  
 }
