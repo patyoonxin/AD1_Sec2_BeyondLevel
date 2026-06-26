@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { KeyIcon } from "@heroicons/react/24/solid";
 
 export default function ForgotPassword() {
   const [phone, setPhone] = useState("");
@@ -28,8 +29,10 @@ export default function ForgotPassword() {
       <div className="w-full max-w-md">
 
         {/* Header */}
-        <div className="text-center mb-8 slide-in-left">
-          <div className="text-4xl mb-4">🔑</div>
+        <div className="flex flex-col items-center text-center mb-8 slide-in-left">
+          <div className="text-4xl mb-4">
+            <KeyIcon className="h-12 w-12 text-yellow-500" />
+          </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Forgot Password</h1>
           <p className="text-gray-600">Enter your phone number to receive an OTP</p>
         </div>

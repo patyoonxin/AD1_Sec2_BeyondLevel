@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../services/api';
+import { HomeIcon } from "@heroicons/react/24/solid";
 
 function Login({ setUser }) {
   const [isAdmin, setIsAdmin]   = useState(false);
@@ -44,8 +45,10 @@ function Login({ setUser }) {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 px-4">
       <div className="w-full max-w-md">
 
-        <div className="text-center mb-8 slide-in-left">
-          <div className="text-4xl mb-4">🏛️</div>
+        <div className="flex flex-col items-center text-center mb-8 slide-in-left pt-6">
+          <div className="text-4xl mb-4">
+            <HomeIcon className="h-12 w-12 text-blue-500" />
+          </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign In</h1>
           <p className="text-gray-600">Sign in to the Official Portal of Kulai District Office</p>
         </div>

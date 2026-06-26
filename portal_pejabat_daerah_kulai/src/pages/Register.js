@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../services/api';
+import { StarIcon } from "@heroicons/react/24/solid";
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -66,8 +67,10 @@ function Register() {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 px-4">
       <div className="w-full max-w-md">
         {/* Header */}
-        <div className="text-center mb-8 slide-in-left">
-          <div className="text-4xl mb-4">✨</div>
+        <div className="flex flex-col items-center text-center mb-8 slide-in-left pt-6">
+          <div className="text-4xl mb-4">
+            <StarIcon className="h-12 w-12 text-yellow-500" />
+          </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
           <p className="text-gray-600">Join us now</p>
         </div>

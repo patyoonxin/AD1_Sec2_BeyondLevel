@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import logo from '../../image/logo.png';
-import { LanguageSwitcher, useTranslation } from '../../lang/i18n';
-import { chatAPI } from '../../services/api';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import logo from "../../image/logo.png";
+import { LanguageSwitcher, useTranslation } from "../../lang/i18n";
+import { chatAPI } from "../../services/api";
 
 function Navbar({ user, setUser }) {
   const navigate = useNavigate();
@@ -15,16 +15,16 @@ function Navbar({ user, setUser }) {
     const fetchConversation = async () => {
       try {
         // Only fetch if user is logged in and not admin
-        if (user && user.id && user.role !== 'admin') {
+        if (user && user.id && user.role !== "admin") {
           const response = await chatAPI.checkUserHasConversation(user.id);
-          console.log('Navbar - User Messages Response:', response);
-          
-        setHasConversation(response.hasConversation);
+          console.log("Navbar - User Messages Response:", response);
+
+          setHasConversation(response.hasConversation);
         } else {
           setHasConversation(false);
         }
       } catch (error) {
-        console.error('Error fetching user messages:', error);
+        console.error("Error fetching user messages:", error);
         setHasConversation(false);
       }
     };
@@ -33,9 +33,9 @@ function Navbar({ user, setUser }) {
   }, [user]);
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken');
+    localStorage.removeItem("authToken");
     setUser(null);
-    navigate('/');
+    navigate("/");
     setMobileMenuOpen(false);
   };
 
@@ -43,9 +43,18 @@ function Navbar({ user, setUser }) {
     <nav className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
       <div className="container-custom flex justify-between items-center py-4">
         {/* Logo */}
-        <Link to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-          <img src={logo} alt="Portal Rasmi Logo" style={{ height: 32, width: 'auto' }} />
-          <span className="text-xl font-bold text-gray-900">Portal Rasmi Pejabat Daerah Kulai</span>
+        <Link
+          to="/"
+          className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+        >
+          <img
+            src={logo}
+            alt="Portal Rasmi Logo"
+            style={{ height: 32, width: "auto" }}
+          />
+          <span className="text-xl font-bold text-gray-900">
+            Portal Rasmi Pejabat Daerah Kulai
+          </span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -56,33 +65,33 @@ function Navbar({ user, setUser }) {
                 to="/chatbot"
                 className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
               >
-                💬 {t('chatbot', 'Chatbot')}
+                {t("chatbot", "Chatbot")}
               </Link>
               <Link
                 to="/complaints"
                 className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
               >
-                📝 {t('complaints', 'Complaints')}
+                {t("complaints", "Complaints")}
               </Link>
               <Link
                 to="/faq"
                 className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
               >
-                ❓ {t('faq', 'FAQ')}
+                {t("faq", "FAQ")}
               </Link>
-                {hasConversation && (
+              {hasConversation && (
                 <Link
                   to="/real-agent"
                   className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
                 >
-                  📞 Permintaan Saya
+                  {t("my-requests", "My Requests")}
                 </Link>
               )}
               <Link
                 to="/profile"
                 className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 flex items-center gap-1"
               >
-                👤 Profile
+                {t("profile", "Profile")}
               </Link>
 
               <LanguageSwitcher style={{ marginLeft: 8 }} />
@@ -90,7 +99,7 @@ function Navbar({ user, setUser }) {
                 onClick={handleLogout}
                 className="btn btn-danger btn-sm ml-2"
               >
-                {t('logout', 'Log Out')}
+                {t("logout", "Log Out")}
               </button>
             </>
           ) : (
@@ -99,13 +108,10 @@ function Navbar({ user, setUser }) {
                 to="/login"
                 className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors duration-200"
               >
-                {t('login', 'Log In')}
+                {t("login", "Log In")}
               </Link>
-              <Link
-                to="/register"
-                className="btn btn-primary btn-sm"
-              >
-                {t('register', 'Register')}
+              <Link to="/register" className="btn btn-primary btn-sm">
+                {t("register", "Register")}
               </Link>
               <LanguageSwitcher style={{ marginLeft: 8 }} />
             </>
@@ -117,8 +123,18 @@ function Navbar({ user, setUser }) {
           className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 6h16M4 12h16M4 18h16"
+            />
           </svg>
         </button>
       </div>
@@ -134,21 +150,21 @@ function Navbar({ user, setUser }) {
                   className="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 rounded-lg transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  💬 Chatbot
+                  {t("chatbot", "Chatbot")}
                 </Link>
                 <Link
                   to="/complaints"
                   className="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 rounded-lg transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  📝 Aduan
+                  {t("complaints", "Complaints")}
                 </Link>
                 <Link
                   to="/faq"
                   className="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 rounded-lg transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  ❓ Soalan Lazim
+                  {t("faq", "FAQ")}
                 </Link>
                 {hasConversation && (
                   <Link
@@ -156,21 +172,15 @@ function Navbar({ user, setUser }) {
                     className="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 rounded-lg transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    📞 Permintaan Saya
+                    {t("my-requests", "My Requests")}
                   </Link>
                 )}
-                <Link
-                  to="/dashboard"
-                  className="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 rounded-lg transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  📊 Dashboard
-                </Link>
+                
                 <button
                   onClick={handleLogout}
                   className="btn btn-danger btn-sm w-full"
                 >
-                  Log Keluar
+                  {t("logout", "Log Out")}
                 </button>
               </>
             ) : (
@@ -180,14 +190,14 @@ function Navbar({ user, setUser }) {
                   className="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 rounded-lg transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Log Masuk
+                  {t("login", "Log In")}
                 </Link>
                 <Link
                   to="/register"
                   className="btn btn-primary btn-sm w-full"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Daftar
+                  {t("register", "Register")}
                 </Link>
               </>
             )}

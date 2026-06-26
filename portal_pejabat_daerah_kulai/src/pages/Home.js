@@ -1,5 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { ChatBubbleLeftRightIcon,MagnifyingGlassIcon,PencilIcon,LockClosedIcon, 
+  StarIcon,EnvelopeIcon,PhoneIcon,ClockIcon } from "@heroicons/react/24/solid";
 
 function Home() {
   return (
@@ -19,10 +21,12 @@ function Home() {
 
           <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
             <Link to="/chatbot" className="btn btn-primary btn-lg">
-              💬 Start Using Chatbot
+              <ChatBubbleLeftRightIcon className="h-5 w-5 mr-2 text-white" />
+              Start Using Chatbot
             </Link>
             <Link to="/faq" className="btn btn-secondary btn-lg">
-              ❓ Explore FAQ
+              <MagnifyingGlassIcon className="h-5 w-5 mr-2 text-red-500" />
+              Explore FAQ
             </Link>
           </div>
         </div>
@@ -42,8 +46,10 @@ function Home() {
 
           <div className="feature-grid">
             {/* Feature 1 */}
-            <div className="feature-card slide-in-left">
-              <div className="feature-icon">💬</div>
+            <div className="flex flex-col items-center text-center feature-card slide-in-left">
+              <div className="feature-icon">
+                <ChatBubbleLeftRightIcon className="h-10 w-10 text-blue-500" />
+              </div>
               <h3 className="feature-title">Smart AI Chatbot</h3>
               <p className="feature-description">
                 Get instant answers from an AI-powered chatbot. Available 24/7 to answer your questions
@@ -51,8 +57,10 @@ function Home() {
             </div>
 
             {/* Feature 2 */}
-            <div className="feature-card slide-in-right">
-              <div className="feature-icon">📝</div>
+            <div className="flex flex-col items-center text-center feature-card slide-in-right">
+              <div className="feature-icon">
+                <PencilIcon className="h-10 w-10 text-brown-500" />
+              </div>
               <h3 className="feature-title">Complaint Management</h3>
               <p className="feature-description">
                 Submit complaints easily and monitor their status in real-time without queuing
@@ -60,8 +68,10 @@ function Home() {
             </div>
 
             {/* Feature 3 */}
-            <div className="feature-card slide-in-left">
-              <div className="feature-icon">❓</div>
+            <div className="flex flex-col items-center text-center feature-card slide-in-left">
+              <div className="feature-icon">
+                <MagnifyingGlassIcon className="h-10 w-10 text-red-500" />
+              </div>
               <h3 className="feature-title">Knowledge Base</h3>
               <p className="feature-description">
                 Find answers to common questions and complete service guides easily
@@ -69,8 +79,10 @@ function Home() {
             </div>
 
             {/* Feature 4 */}
-            <div className="feature-card slide-in-right">
-              <div className="feature-icon">🔒</div>
+            <div className="flex flex-col items-center text-center feature-card slide-in-right">
+              <div className="feature-icon">
+                <LockClosedIcon className="h-10 w-10 text-yellow-500" />
+              </div>
               <h3 className="feature-title">Secure & Trusted</h3>
               <p className="feature-description">
                 Your information is protected with enterprise-level security standards
@@ -166,7 +178,8 @@ function Home() {
             Join thousands of users who already enjoy the convenience of our service
           </p>
           <Link to="/register" className="btn btn-primary btn-lg">
-            ✨ Register Now
+            <StarIcon className="h-5 w-5 mr-2 text-yellow-500" />
+            Register Now
           </Link>
         </div>
       </section>
@@ -190,9 +203,9 @@ function Home() {
             <div>
               <h4 className="text-white font-semibold mb-4">Contact</h4>
               <ul className="space-y-2 text-sm">
-                <li>📧 support@kulai.gov.my</li>
-                <li>📞 +60-7-1234-5678</li>
-                <li>🕐 Monday - Friday, 08:00 - 17:00</li>
+                <li><EnvelopeIcon className="h-5 w-5 mr-2 inline text-white-500" /> support@kulai.gov.my</li>
+                <li><PhoneIcon className="h-5 w-5 mr-2 inline text-white-500" /> +60-7-1234-5678</li>
+                <li><ClockIcon className="h-5 w-5 mr-2 inline text-white-500" /> Monday - Friday, 08:00 - 17:00</li>
               </ul>
             </div>
           </div>

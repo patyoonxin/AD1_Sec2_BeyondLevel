@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from '../components/Common/Navbar';
-
+import { UserIcon, EnvelopeIcon, PhoneIcon, LockClosedIcon } from "@heroicons/react/24/solid";
 
 const ProfilePage = ({ setUser: setGlobalUser }) => {
   const [user, setUser] = useState(null);
@@ -130,9 +130,9 @@ const ProfilePage = ({ setUser: setGlobalUser }) => {
           {!editMode ? (
             <div className="space-y-4">
               {[
-                { label: 'Full Name', value: user.name, icon: '👤' },
-                { label: 'Email Address', value: user.email || 'No email added', icon: '✉️' },
-                { label: 'Phone Number', value: user.phone_number, icon: '📱' },
+                { label: 'Full Name', value: user.name, icon: <UserIcon className="h-5 w-5 mr-2 inline text-gray-500" /> },
+                { label: 'Email Address', value: user.email || 'No email added', icon: <EnvelopeIcon className="h-5 w-5 mr-2 inline text-gray-500" /> },
+                { label: 'Phone Number', value: user.phone_number, icon: <PhoneIcon className="h-5 w-5 mr-2 inline text-gray-500" /> },
               ].map(({ label, value, icon }) => (
                 <div key={label} className="flex items-center p-3 bg-gray-50 rounded-lg">
                   <span className="text-lg mr-3">{icon}</span>
@@ -179,7 +179,9 @@ const ProfilePage = ({ setUser: setGlobalUser }) => {
 
           {!showPasswordForm ? (
             <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-              <span className="text-lg mr-3">🔒</span>
+              <span className="text-lg mr-3">
+                <LockClosedIcon className="h-5 w-5 inline text-yellow-500" />
+              </span>
               <div>
                 <p className="text-xs text-gray-400 font-medium">Password</p>
                 <p className="text-gray-800 font-medium">••••••••</p>

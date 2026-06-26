@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { faqAPI } from "../services/api";
+import { MagnifyingGlassIcon,ExclamationTriangleIcon, QuestionMarkCircleIcon,
+  PaperAirplaneIcon,EnvelopeIcon } from "@heroicons/react/24/solid";
 
 function FAQPage() {
   const [faqs, setFaqs] = useState([]);
@@ -80,8 +82,10 @@ function FAQPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-5xl mb-4">🔍</div>
+        <div className="flex flex-col items-center text-center">
+          <div className="mb-4">
+            <MagnifyingGlassIcon className="h-12 w-12 text-gray-400" />
+          </div>
           <p className="text-xl text-gray-600">Loading FAQ...</p>
         </div>
       </div>
@@ -91,8 +95,10 @@ function FAQPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-5xl mb-4">⚠️</div>
+        <div className="flex flex-col items-center text-center">
+          <div className="mb-4">
+            <ExclamationTriangleIcon className="h-12 w-12 text-red-600 mx-auto" />
+          </div>
           <p className="text-xl text-red-600 mb-4">{error}</p>
           <button onClick={fetchFAQs} className="btn btn-primary">
             Try Again
@@ -108,7 +114,7 @@ function FAQPage() {
         {/* Header */}
         <div className="mb-12 text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            ❓ Frequently Asked Question
+            Frequently Asked Question
           </h1>
           <p className="text-lg text-gray-600">
             Find answers to your common questions below
@@ -121,7 +127,7 @@ function FAQPage() {
             <div className="relative flex-1">
               <input
                 type="text"
-                placeholder="🔍 Search questions..."
+                placeholder="Search questions..."
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
@@ -179,7 +185,8 @@ function FAQPage() {
                 color: "#dc2626",
               }}
             >
-              ⚠️ {searchError}
+              <ExclamationTriangleIcon className="h-5 w-5 text-red-600" />
+              <span>{searchError}</span>
             </div>
           )}
 
@@ -197,7 +204,9 @@ function FAQPage() {
           {/* A1: No Matching Results */}
           {noResult ? (
             <div className="empty-state py-12">
-              <div className="empty-state-icon">🤔</div>
+              <div className="empty-state-icon">
+                <QuestionMarkCircleIcon className="h-12 w-12 text-gray-400" />
+              </div>
               <p className="empty-state-text">No matching FAQ found</p>
               <p className="text-gray-500 text-sm mt-2">
                 Try with different keywords
@@ -212,7 +221,9 @@ function FAQPage() {
             </div>
           ) : faqs.length === 0 ? (
             <div className="empty-state py-12">
-              <div className="empty-state-icon">📭</div>
+              <div className="empty-state-icon">
+                <PaperAirplaneIcon className="h-12 w-12 text-gray-400" />
+              </div>
               <p className="empty-state-text">No FAQ available</p>
             </div>
           ) : (
@@ -292,7 +303,8 @@ function FAQPage() {
               href="mailto:support@kulai.gov.my"
               className="btn btn-primary inline-block"
             >
-              📧 Contact Support
+              <EnvelopeIcon className="h-5 w-5 mr-2" />
+              Contact Support
             </a>
           </div>
         )}
