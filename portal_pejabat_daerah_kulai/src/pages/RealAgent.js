@@ -146,12 +146,12 @@ function RealAgent() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="h-[calc(100vh-76px)] flex flex-col bg-gray-50">
 
       {/* HEADER */}
       <div className="bg-white border-b border-gray-200 shadow-sm p-5">
         <h1 className="text-2xl font-bold text-gray-900">
-          💬 Live Agent Support
+          Live Agent Support
         </h1>
 
         <p className="text-sm text-gray-500 mt-1">
@@ -185,11 +185,13 @@ function RealAgent() {
                     : "bg-white text-black border border-gray-200 rounded-bl-none"
                 }`}
               >
-                <p className="text-xs font-semibold mb-1 opacity-80">
+                <div className="text-xs font-semibold mb-1 opacity-80">
                   {message.senderName}
-                </p>
+                </div>
 
-                <p>{message.text}</p>
+                <div className="text-sm">
+                  {message.text}
+                </div>
 
                 <span className="text-xs block mt-1 opacity-70">
                   {time}
@@ -221,7 +223,7 @@ function RealAgent() {
           type="submit"
           className="bg-blue-600 hover:bg-blue-700 text-white px-5 rounded-xl transition"
         >
-          📤 Send
+          Send
         </button>
       </form>
     </div>

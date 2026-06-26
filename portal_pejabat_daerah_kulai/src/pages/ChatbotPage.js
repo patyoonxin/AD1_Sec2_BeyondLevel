@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { chatbotAPI } from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import {
+  ChatBubbleLeftRightIcon,
+  ArrowPathIcon,
+} from "@heroicons/react/24/solid";
 
 function ChatbotPage() {
   const navigate = useNavigate();
@@ -144,17 +148,17 @@ function ChatbotPage() {
   };
 
   return (
-    <div className="h-[85vh] flex flex-col overflow-hidden bg-gray-50">
+    <div className="h-[calc(100vh-76px)] flex flex-col overflow-hidden bg-gray-50">
 
       {/* HEADER */}
-      {/* <div className="bg-white border-b border-gray-200 shadow-sm p-6">
+      {<div className="bg-white border-b border-gray-200 shadow-sm p-6">
         <h2 className="text-2xl font-bold text-gray-900">
-          💬 AI-Chatbots & Assistants
+          AI-Chatbots & Assistants
         </h2>
         <p className="text-sm text-gray-600 mt-1">
           Smart customer service available 24/7
         </p>
-      </div> */}
+      </div> }
 
       {/* CHAT */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
@@ -179,9 +183,10 @@ function ChatbotPage() {
               {message.showAgentButton && (
                 <button
                   onClick={() => navigate('/real-agent')}
-                  className="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm"
+                  className="flex mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm"
                 >
-                  💬 Contact Live Agent
+                  <ChatBubbleLeftRightIcon className="h-5 w-5 mr-2" />
+                  Contact Live Agent
                 </button>
               )}
                </div>
@@ -227,7 +232,7 @@ function ChatbotPage() {
             disabled={loading}
             className="btn btn-primary"
           >
-            {loading ? '⏳' : 'Send'}
+            {loading ? <ArrowPathIcon className="h-5 w-5 mr-2 animate-spin" /> : 'Send'}
           </button>
         </form>
       </div>
