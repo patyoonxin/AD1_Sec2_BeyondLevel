@@ -194,6 +194,12 @@
   "type-your-message": "Taip mesej anda di sini...",
   "hello-how-help": "Hello! 👋 Bagaimana saya boleh membantu anda hari ini?",
   "api-error": "Maaf, saya tidak dapat memproses permintaan anda sekarang.",
-  "contact-live-agent": "Hubungi Ejen Sebenar"
+  "contact-live-agent": "Hubungi Ejen Sebenar",
+
+  "hello-how-support": "Hello! 👋 Selamat datang ke Sokongan Portal.",
+  "live-agent-support": "Sokongan Ejen Sebenar",
+  "connected-with-admin-support": "Bersambung dengan ejen pentadbir",
+  "you": "Anda",
+  "admin-support": "Ejen Pentadbir"
   
 }

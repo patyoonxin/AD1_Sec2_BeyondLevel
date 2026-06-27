@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { chatAPI } from "../services/api";
+import { useTranslation } from "../lang/i18n";
 
 function RealAgent() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // ============================================
   // GET REAL USER ID
@@ -17,7 +19,7 @@ function RealAgent() {
   const [messages, setMessages] = useState([
     {
       id: 1,
-      text: "Hello 👋 Welcome to Portal Support.",
+      text: t('hello-how-support', 'Hello! 👋 Welcome to Portal Support.'),
       sender: "agent",
       senderName: "Admin Support",
       timestamp: new Date(),
@@ -96,8 +98,8 @@ function RealAgent() {
             : "agent",
         senderName:
           parseInt(msg.sender_id) === parseInt(userId)
-            ? "You"
-            : "Admin Support",
+            ? t("you", "You")
+            : t("admin-support", "Admin Support"),
         timestamp: new Date(msg.created_at),
       }));
 
@@ -151,11 +153,11 @@ function RealAgent() {
       {/* HEADER */}
       <div className="bg-white border-b border-gray-200 shadow-sm p-5">
         <h1 className="text-2xl font-bold text-gray-900">
-          Live Agent Support
+          {t('live-agent-support', 'Live Agent Support')}
         </h1>
 
         <p className="text-sm text-gray-500 mt-1">
-          Connected with admin support
+          {t('connected-with-admin-support', 'Connected with admin support')}
         </p>
       </div>
 
@@ -216,14 +218,14 @@ function RealAgent() {
             setInputValue(e.target.value)
           }
           className="flex-1 border border-gray-300 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Type message..."
+           placeholder={t("type-your-message", "Type your message here...")}
         />
 
         <button
           type="submit"
           className="bg-blue-600 hover:bg-blue-700 text-white px-5 rounded-xl transition"
         >
-          Send
+          {t("send", "Send")}
         </button>
       </form>
     </div>
