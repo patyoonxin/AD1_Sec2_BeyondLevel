@@ -112,13 +112,13 @@ function AdminComplaints() {
   const columns = [
     {
       key: 'record_id', label: t('record_id', 'Record ID'), width: '9%',
-      render: (v) => <span style={{ color: '#aaa89e', fontSize: 11, whiteSpace: 'nowrap' }}>{v}</span>,
+      render: (v) => <span style={{ color: '#9ca3af', fontSize: 11, whiteSpace: 'nowrap' }}>{v}</span>,
     },
     {
       key: 'title', label: t('title', 'Title'), width: '30%',
       render: (v) => (
         <span style={{
-          fontWeight: 500, color: '#1a1a1a',
+          fontWeight: 500, color: '#111827',
           lineHeight: 1.45,
           // Allow up to two lines before truncating, giving long titles room.
           display: '-webkit-box',
@@ -130,7 +130,7 @@ function AdminComplaints() {
     },
     {
       key: 'category', label: t('category', 'Category'), width: '12%',
-      render: (v) => <span style={{ color: '#555450' }}>{v}</span>,
+      render: (v) => <span style={{ color: '#6b7280' }}>{v}</span>,
     },
     {
       key: 'user', label: t('submitted_by', 'Submitted by'), width: '16%',
@@ -147,7 +147,7 @@ function AdminComplaints() {
     {
       key: 'created_at', label: t('date', 'Date'), width: '11%',
       render: (v) => (
-        <span style={{ color: '#888780', whiteSpace: 'nowrap' }}>
+        <span style={{ color: '#9ca3af', whiteSpace: 'nowrap' }}>
           {v ? new Date(v).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
         </span>
       ),
@@ -185,10 +185,10 @@ function AdminComplaints() {
             {columns.map((col) => (
               <th key={col.key} style={{
                 textAlign: 'left',
-                padding: col.key === 'title' ? '10px 18px' : '8px 12px',
-                fontSize: 11, fontWeight: 600, color: '#888780',
-                borderBottom: '1px solid #eceae4',
-                background: '#f8f7f4', whiteSpace: 'nowrap',
+                padding: col.key === 'title' ? '10px 18px' : '10px 14px',
+                fontSize: 12, fontWeight: 600, color: '#6b7280',
+                borderBottom: '1px solid #e5e7eb',
+                background: '#f9fafb', whiteSpace: 'nowrap',
               }}>{col.label}</th>
             ))}
           </tr>
@@ -198,16 +198,17 @@ function AdminComplaints() {
             <tr
               key={row.id}
               style={{
-                borderBottom: ri < filtered.length - 1 ? '1px solid #f1efe8' : 'none',
+                borderBottom: '1px solid #f3f4f6',
               }}
+              onMouseEnter={e => e.currentTarget.style.background = '#f9fafb'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
               {columns.map((col) => (
                 <td
                   key={col.key}
                   style={{
-                    // Title column gets noticeably more padding for breathing room.
-                    padding: col.key === 'title' ? '14px 18px' : '9px 12px',
-                    color: '#333',
+                    padding: col.key === 'title' ? '14px 18px' : '11px 14px',
+                    color: '#374151',
                     verticalAlign: 'middle',
                     wordBreak: 'break-word',
                   }}
@@ -225,12 +226,12 @@ function AdminComplaints() {
   return (
     <div>
       {/* Metrics */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0,1fr))', gap: 12, marginBottom: 20 }}>
-        <MetricCard label={t('total', 'Total')}       value={metrics.total} />
-        <MetricCard label={t('pending', 'Pending')}     value={metrics.pending}     subColor="down" />
-        <MetricCard label={t('in_progress', 'In Progress')} value={metrics.in_progress} />
-        <MetricCard label={t('resolved', 'Resolved')}    value={metrics.resolved}    subColor="up" />
-        <MetricCard label={t('rejected', 'Rejected')}    value={metrics.rejected}    subColor="down" />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0,1fr))', gap: 14, marginBottom: 20 }}>
+        <MetricCard label={t('total', 'Total')}           value={metrics.total}       accentColor="#2563eb" />
+        <MetricCard label={t('pending', 'Pending')}       value={metrics.pending}     accentColor="#f59e0b" subColor="down" />
+        <MetricCard label={t('in_progress', 'In Progress')} value={metrics.in_progress} accentColor="#3b82f6" />
+        <MetricCard label={t('resolved', 'Resolved')}     value={metrics.resolved}    accentColor="#10b981" subColor="up" />
+        <MetricCard label={t('rejected', 'Rejected')}     value={metrics.rejected}    accentColor="#ef4444" subColor="down" />
       </div>
 
       <Card>
@@ -260,9 +261,9 @@ function AdminComplaints() {
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '7px 12px', fontSize: 11, fontWeight: 500, whiteSpace: 'nowrap',
                 border: '1px solid',
-                borderColor: (dateRange.start || dateRange.end) ? '#1a4fa0' : '#d3d1c7',
-                background: (dateRange.start || dateRange.end) ? '#eef2fc' : '#fff',
-                color: (dateRange.start || dateRange.end) ? '#1a4fa0' : '#555450',
+                borderColor: (dateRange.start || dateRange.end) ? '#2563eb' : '#e5e7eb',
+                background: (dateRange.start || dateRange.end) ? '#eff6ff' : '#fff',
+                color: (dateRange.start || dateRange.end) ? '#2563eb' : '#6b7280',
                 borderRadius: 7, cursor: 'pointer',
               }}
             >
@@ -330,7 +331,7 @@ function AdminComplaints() {
                     }}
                     style={{
                       flex: 1, padding: '7px 0', fontSize: 12, fontWeight: 600,
-                      background: '#1a4fa0', color: '#fff',
+                      background: '#2563eb', color: '#fff',
                       border: 'none', borderRadius: 6, cursor: 'pointer',
                     }}
                   >
@@ -346,8 +347,8 @@ function AdminComplaints() {
                     }}
                     style={{
                       flex: 1, padding: '7px 0', fontSize: 12, fontWeight: 500,
-                      background: '#f1efe8', color: '#555450',
-                      border: '1px solid #d3d1c7', borderRadius: 6, cursor: 'pointer',
+                      background: '#f9fafb', color: '#374151',
+                      border: '1px solid #e5e7eb', borderRadius: 6, cursor: 'pointer',
                     }}
                   >
                     {t('clear', 'Clear')}
@@ -359,17 +360,17 @@ function AdminComplaints() {
         </div>
 
         {loading ? (
-          <div style={{ padding: '40px 0', textAlign: 'center', color: '#888780' }}>{t('loading', 'Loading...')}</div>
+          <div style={{ padding: '40px 0', textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>{t('loading', 'Loading...')}</div>
         ) : error ? (
           <div style={{ padding: '48px 0', textAlign: 'center' }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}></div>
-            <p style={{ fontWeight: 600, color: '#555450', margin: '0 0 16px', fontSize: 13 }}>
+            <p style={{ fontWeight: 600, color: '#6b7280', margin: '0 0 16px', fontSize: 13 }}>
               {t('load_complaints_error', 'Unable to load complaints. Please try again later.')}
             </p>
           </div>
         ) : filtered.length === 0 ? (
           <div style={{ padding: '48px 0', textAlign: 'center' }}>
-            <p style={{ fontWeight: 600, color: '#555450', margin: '0 0 6px', fontSize: 13 }}>
+            <p style={{ fontWeight: 600, color: '#6b7280', margin: '0 0 6px', fontSize: 13 }}>
               {(search || dateRange.start || dateRange.end)
                 ? t('no_search_results', 'No results match your current filters.')
                 : t('no_complaints_yet', 'No complaints submitted yet.')}
@@ -380,7 +381,7 @@ function AdminComplaints() {
         )}
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 16, fontSize: 11, color: '#888780' }}>
-          <span>
+          <span style={{ color: '#9ca3af', fontSize: 12 }}>
             {t('showing_of_complaints', 'Showing {shown} of {total} complaints', {
               shown: filtered.length,
               total: metrics.total,
@@ -395,8 +396,8 @@ function AdminComplaints() {
                   onClick={() => loadComplaints(page - 1)}
                   style={{
                     padding: '4px 10px', fontSize: 11, borderRadius: 6,
-                    border: '1px solid #d3d1c7', background: '#fff',
-                    color: '#1a1a1a', cursor: 'pointer',
+                    border: '1px solid #e5e7eb', background: '#fff',
+                    color: '#374151', cursor: 'pointer',
                   }}
                 >
                   ‹ {t('previous', 'Previous')}
@@ -420,9 +421,9 @@ function AdminComplaints() {
                       style={{
                         minWidth: 28, padding: '4px 6px', fontSize: 11, borderRadius: 6,
                         border: '1px solid',
-                        borderColor: p === page ? '#1a4fa0' : '#d3d1c7',
-                        background: p === page ? '#1a4fa0' : '#fff',
-                        color: p === page ? '#fff' : '#1a1a1a',
+                        borderColor: p === page ? '#2563eb' : '#e5e7eb',
+                        background: p === page ? '#2563eb' : '#fff',
+                        color: p === page ? '#fff' : '#374151',
                         cursor: 'pointer', fontWeight: p === page ? 600 : 400,
                       }}
                     >
@@ -436,8 +437,8 @@ function AdminComplaints() {
                   onClick={() => loadComplaints(page + 1)}
                   style={{
                     padding: '4px 10px', fontSize: 11, borderRadius: 6,
-                    border: '1px solid #d3d1c7', background: '#fff',
-                    color: '#1a1a1a', cursor: 'pointer',
+                    border: '1px solid #e5e7eb', background: '#fff',
+                    color: '#374151', cursor: 'pointer',
                   }}
                 >
                   {t('next', 'Next')} ›

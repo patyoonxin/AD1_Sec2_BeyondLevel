@@ -163,10 +163,10 @@ function AdminCategories() {
         />
 
         {loading ? (
-          <div style={{ padding: '40px 0', textAlign: 'center', color: '#888780' }}>{t('loading', 'Loading...')}</div>
+          <div style={{ padding: '40px 0', textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>{t('loading', 'Loading...')}</div>
         ) : error ? (
           <div style={{ padding: '48px 0', textAlign: 'center' }}>
-            <p style={{ fontWeight: 600, color: '#a32d2d', margin: '0 0 14px', fontSize: 13 }}>
+            <p style={{ fontWeight: 600, color: '#dc2626', margin: '0 0 14px', fontSize: 13 }}>
               {t('connect_error', 'Failed to connect. Please try again later.')}
             </p>
           </div>
@@ -174,7 +174,7 @@ function AdminCategories() {
           <DataTable columns={columns} rows={filtered} />
         )}
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 16, fontSize: 11, color: '#888780' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 16, fontSize: 12, color: '#9ca3af' }}>
           <span>{t('showing_of_categories', 'Showing {shown} of {total} categories', { shown: filtered.length, total: categories.length })}</span>
         </div>
       </Card>
@@ -187,12 +187,12 @@ function AdminCategories() {
           zIndex: 2000,
         }}>
           <Card style={{ width: 420, maxWidth: '90vw' }}>
-            <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 600 }}>
+            <h3 style={{ margin: '0 0 20px', fontSize: 17, fontWeight: 700, color: '#111827' }}>
               {editingId ? t('edit_category', 'Edit Category') : t('add_category', 'Add Category')}
             </h3>
             <form onSubmit={handleSave}>
               <div style={{ marginBottom: 12 }}>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 500, marginBottom: 4, color: '#555450' }}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: '#374151' }}>
                   {t('name', 'Name')} <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <input
@@ -201,16 +201,16 @@ function AdminCategories() {
                   onChange={(e) => { setFormData({ ...formData, name: e.target.value }); if (e.target.value.trim()) setNameError(''); }}
                   style={{
                     width: '100%', padding: '8px 10px', borderRadius: 6,
-                    border: nameError ? '1px solid #ef4444' : '1px solid #d3d1c7',
+                    border: nameError ? '1px solid #ef4444' : '1px solid #d1d5db',
                     fontSize: 13, outline: 'none',
                   }}
                 />
                 {nameError && (
-                  <p style={{ margin: '4px 0 0', fontSize: 12, color: '#a32d2d' }}>{nameError}</p>
+                  <p style={{ margin: '4px 0 0', fontSize: 12, color: '#dc2626' }}>{nameError}</p>
                 )}
               </div>
               <div style={{ marginBottom: 12 }}>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 500, marginBottom: 4, color: '#555450' }}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: '#374151' }}>
                   {t('description', 'Description')}
                 </label>
                 <textarea
@@ -219,25 +219,25 @@ function AdminCategories() {
                   rows={3}
                   style={{
                     width: '100%', padding: '8px 10px', borderRadius: 6,
-                    border: '1px solid #d3d1c7', fontSize: 13, outline: 'none', resize: 'vertical',
+                    border: '1px solid #d1d5db', fontSize: 13, outline: 'none', resize: 'vertical',
                   }}
                 />
               </div>
               <div style={{ marginBottom: 12 }}>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 500, marginBottom: 4, color: '#555450' }}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6, color: '#374151' }}>
                   {t('synonyms', 'AI Synonyms')}
                 </label>
-                <p style={{ margin: '0 0 6px', fontSize: 11, color: '#888' }}>
+                <p style={{ margin: '0 0 6px', fontSize: 12, color: '#9ca3af' }}>
                   {t('synonyms_hint', 'Press Enter or comma to add.')}
                 </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, padding: '6px 8px', border: '1px solid #d3d1c7', borderRadius: 6, minHeight: 36 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, padding: '6px 8px', border: '1px solid #d1d5db', borderRadius: 8, minHeight: 36 }}>
                   {formData.synonyms.map((syn, i) => (
-                    <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#e8f0fe', color: '#1a4fa0', borderRadius: 4, padding: '2px 8px', fontSize: 12 }}>
+                    <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#dbeafe', color: '#1d4ed8', borderRadius: 4, padding: '2px 8px', fontSize: 12 }}>
                       {syn}
                       <button
                         type="button"
                         onClick={() => setFormData({ ...formData, synonyms: formData.synonyms.filter((_, idx) => idx !== i) })}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1a4fa0', fontWeight: 700, fontSize: 13, lineHeight: 1, padding: 0 }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1d4ed8', fontWeight: 700, fontSize: 13, lineHeight: 1, padding: 0 }}
                       >×</button>
                     </span>
                   ))}
@@ -274,7 +274,7 @@ function AdminCategories() {
                 </label>
               </div>
               {saveError && (
-                <p style={{ margin: '0 0 12px', fontSize: 12, color: '#a32d2d', background: '#fcebeb', padding: '8px 10px', borderRadius: 6 }}>{saveError}</p>
+                <p style={{ margin: '0 0 12px', fontSize: 12, color: '#dc2626', background: '#fee2e2', padding: '8px 12px', borderRadius: 8 }}>{saveError}</p>
               )}
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
                 <Btn small onClick={() => setModalOpen(false)}>{t('cancel', 'Cancel')}</Btn>
@@ -296,12 +296,12 @@ function AdminCategories() {
         }}>
           <Card style={{ width: 360, maxWidth: '90vw', textAlign: 'center' }}>
             <h3 style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 600 }}>{t('confirm_delete', 'Confirm Delete')}</h3>
-            <p style={{ margin: '0 0 20px', fontSize: 13, color: '#555450' }}>
+            <p style={{ margin: '0 0 20px', fontSize: 13, color: '#6b7280' }}>
               {t('delete_category_warning', 'Are you sure you want to delete this category? This action cannot be undone.')}
             </p>
             <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
               <Btn small onClick={() => setDeleteConfirm(null)}>{t('cancel', 'Cancel')}</Btn>
-              <Btn small onClick={() => handleDelete(deleteConfirm)} style={{ background: '#fcebeb', color: '#a32d2d', border: '1px solid #e8c4c4' }}>
+              <Btn small onClick={() => handleDelete(deleteConfirm)} style={{ background: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' }}>
                 {t('delete', 'Delete')}
               </Btn>
             </div>

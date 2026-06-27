@@ -2,12 +2,12 @@ import React from 'react';
 
 /* ── Badge ───────────────────────────────────────────── */
 const BADGE_STYLES = {
-  success:  { background: '#eaf3de', color: '#3b6d11' },
-  warning:  { background: '#faeeda', color: '#854f0b' },
-  info:     { background: '#e8f0fb', color: '#1a4fa0' },
-  danger:   { background: '#fcebeb', color: '#a32d2d' },
-  gray:     { background: '#f1efe8', color: '#5f5e5a' },
-  purple:   { background: '#eeedfe', color: '#534ab7' },
+  success:  { background: '#dcfce7', color: '#15803d' },
+  warning:  { background: '#fef9c3', color: '#a16207' },
+  info:     { background: '#dbeafe', color: '#1d4ed8' },
+  danger:   { background: '#fee2e2', color: '#dc2626' },
+  gray:     { background: '#f3f4f6', color: '#6b7280' },
+  purple:   { background: '#ede9fe', color: '#6d28d9' },
 };
 
 export function Badge({ variant = 'gray', children }) {
@@ -42,18 +42,21 @@ export function StatusBadge({ status }) {
 }
 
 /* ── MetricCard ──────────────────────────────────────── */
-export function MetricCard({ label, value, sub, subColor }) {
-  const colorMap = { up: '#3b6d11', down: '#a32d2d', neu: '#aaa89e' };
+export function MetricCard({ label, value, sub, subColor, accentColor }) {
+  const colorMap = { up: '#15803d', down: '#dc2626', neu: '#9ca3af' };
   return (
     <div style={{
-      background: '#f1efe8',
-      borderRadius: 8,
+      background: '#fff',
+      border: '1px solid #e5e7eb',
+      borderLeft: `4px solid ${accentColor || '#2563eb'}`,
+      borderRadius: 10,
       padding: '14px 16px',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
     }}>
-      <div style={{ fontSize: 11, color: '#888780', marginBottom: 6 }}>{label}</div>
-      <div style={{ fontSize: 24, fontWeight: 600, lineHeight: 1, color: '#1a1a1a' }}>{value}</div>
+      <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
+      <div style={{ fontSize: 24, fontWeight: 700, lineHeight: 1, color: '#111827' }}>{value}</div>
       {sub && (
-        <div style={{ fontSize: 11, color: colorMap[subColor] || '#aaa89e', marginTop: 4 }}>
+        <div style={{ fontSize: 11, color: colorMap[subColor] || '#9ca3af', marginTop: 4 }}>
           {sub}
         </div>
       )}
@@ -66,9 +69,10 @@ export function Card({ children, style = {} }) {
   return (
     <div style={{
       background: '#fff',
-      border: '1px solid #eceae4',
-      borderRadius: 12,
-      padding: '16px 20px',
+      border: '1px solid #e5e7eb',
+      borderRadius: 16,
+      padding: '20px 24px',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
       ...style,
     }}>
       {children}
@@ -81,9 +85,9 @@ export function SectionHeader({ title, right }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center',
-      justifyContent: 'space-between', marginBottom: 14,
+      justifyContent: 'space-between', marginBottom: 16,
     }}>
-      <span style={{ fontSize: 14, fontWeight: 600, color: '#1a1a1a' }}>{title}</span>
+      <span style={{ fontSize: 18, fontWeight: 700, color: '#111827' }}>{title}</span>
       {right && <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>{right}</div>}
     </div>
   );
@@ -116,19 +120,24 @@ export function Avatar({ initials, size = 28 }) {
 }
 
 /* ── Btn ─────────────────────────────────────────────── */
-export function Btn({ children, primary, small, onClick, style: extStyle = {} }) {
+export function Btn({ children, primary, small, onClick, style: extStyle = {}, disabled, type }) {
   return (
     <button
+      type={type || 'button'}
       onClick={onClick}
+      disabled={disabled}
       style={{
-        padding: small ? '5px 11px' : '7px 16px',
-        fontSize: small ? 11 : 13,
-        borderRadius: 7,
-        border: primary ? 'none' : '1px solid #d3d1c7',
-        background: primary ? '#1a4fa0' : '#f1efe8',
-        color: primary ? '#e8f0fb' : '#1a1a1a',
-        cursor: 'pointer',
+        padding: small ? '6px 12px' : '8px 18px',
+        fontSize: small ? 12 : 13,
+        borderRadius: 8,
+        border: primary ? 'none' : '1px solid #e5e7eb',
+        background: primary ? '#2563eb' : '#f9fafb',
+        color: primary ? '#fff' : '#374151',
+        cursor: disabled ? 'not-allowed' : 'pointer',
         fontWeight: 500,
+        opacity: disabled ? 0.6 : 1,
+        boxShadow: primary ? '0 1px 3px rgba(37,99,235,0.25)' : 'none',
+        transition: 'background 0.15s, box-shadow 0.15s',
         ...extStyle,
       }}
     >
@@ -144,13 +153,14 @@ export function IconBtn({ children, danger, title, onClick }) {
       title={title}
       onClick={onClick}
       style={{
-        width: 27, height: 27,
-        borderRadius: 6,
-        border: '1px solid #eceae4',
-        background: '#f8f7f4',
+        width: 28, height: 28,
+        borderRadius: 7,
+        border: `1px solid ${danger ? '#fecaca' : '#e5e7eb'}`,
+        background: danger ? '#fff5f5' : '#f9fafb',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         cursor: 'pointer',
-        color: danger ? '#a32d2d' : '#555450',
+        color: danger ? '#dc2626' : '#6b7280',
+        transition: 'background 0.15s',
       }}
     >
       {children}
@@ -162,15 +172,15 @@ export function IconBtn({ children, danger, title, onClick }) {
 export function DataTable({ columns, rows }) {
   return (
     <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
         <thead>
           <tr>
             {columns.map((col) => (
               <th key={col.key} style={{
-                textAlign: 'left', padding: '8px 12px',
-                fontSize: 11, fontWeight: 600, color: '#888780',
-                borderBottom: '1px solid #eceae4',
-                background: '#f8f7f4',
+                textAlign: 'left', padding: '10px 14px',
+                fontSize: 12, fontWeight: 600, color: '#6b7280',
+                borderBottom: '1px solid #e5e7eb',
+                background: '#f9fafb',
                 whiteSpace: 'nowrap',
               }}>
                 {col.label}
@@ -180,9 +190,12 @@ export function DataTable({ columns, rows }) {
         </thead>
         <tbody>
           {rows.map((row, ri) => (
-            <tr key={ri} style={{ borderBottom: ri < rows.length - 1 ? '1px solid #f1efe8' : 'none' }}>
+            <tr key={ri} style={{ borderBottom: '1px solid #f3f4f6', transition: 'background 0.1s' }}
+              onMouseEnter={e => e.currentTarget.style.background = '#f9fafb'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
               {columns.map((col) => (
-                <td key={col.key} style={{ padding: '9px 12px', color: '#333', verticalAlign: 'middle' }}>
+                <td key={col.key} style={{ padding: '11px 14px', color: '#374151', verticalAlign: 'middle' }}>
                   {col.render ? col.render(row[col.key], row) : row[col.key]}
                 </td>
               ))}
@@ -199,12 +212,12 @@ export function SearchBar({ placeholder, value, onChange, onClear }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 8,
-      background: '#f8f7f4', border: '1px solid #eceae4',
-      borderRadius: 7, padding: '7px 12px', marginBottom: 14,
+      background: '#f9fafb', border: '1px solid #e5e7eb',
+      borderRadius: 9, padding: '8px 14px', marginBottom: 14,
     }}>
-      <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-        <circle cx="7" cy="7" r="5" stroke="#aaa89e" strokeWidth="1.4" />
-        <path d="M11 11l3 3" stroke="#aaa89e" strokeWidth="1.4" strokeLinecap="round" />
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+        <circle cx="7" cy="7" r="5" stroke="#9ca3af" strokeWidth="1.4" />
+        <path d="M11 11l3 3" stroke="#9ca3af" strokeWidth="1.4" strokeLinecap="round" />
       </svg>
       <input
         value={value}
@@ -212,7 +225,7 @@ export function SearchBar({ placeholder, value, onChange, onClear }) {
         placeholder={placeholder}
         style={{
           border: 'none', background: 'transparent', outline: 'none',
-          fontSize: 12, color: '#333', flex: 1,
+          fontSize: 13, color: '#111827', flex: 1,
         }}
       />
       {value && onClear && (
@@ -223,7 +236,7 @@ export function SearchBar({ placeholder, value, onChange, onClear }) {
           title="Clear search"
           style={{
             border: 'none', background: 'transparent', cursor: 'pointer',
-            color: '#888780', padding: 2, lineHeight: 1, fontSize: 14,
+            color: '#9ca3af', padding: 2, lineHeight: 1, fontSize: 14,
           }}
         >
           ✕
@@ -236,18 +249,19 @@ export function SearchBar({ placeholder, value, onChange, onClear }) {
 /* ── Tabs ────────────────────────────────────────────── */
 export function Tabs({ tabs, active, onChange }) {
   return (
-    <div style={{ display: 'flex', borderBottom: '1px solid #eceae4', marginBottom: 16 }}>
+    <div style={{ display: 'flex', borderBottom: '1px solid #e5e7eb', marginBottom: 16 }}>
       {tabs.map((tab) => (
         <button
           key={tab.key}
           onClick={() => onChange(tab.key)}
           style={{
-            padding: '9px 16px', fontSize: 12,
-            color: active === tab.key ? '#1a4fa0' : '#888780',
+            padding: '10px 16px', fontSize: 13,
+            color: active === tab.key ? '#2563eb' : '#6b7280',
             background: 'none', border: 'none',
-            borderBottom: active === tab.key ? '2px solid #1a4fa0' : '2px solid transparent',
+            borderBottom: active === tab.key ? '2px solid #2563eb' : '2px solid transparent',
             marginBottom: -1, cursor: 'pointer',
             fontWeight: active === tab.key ? 600 : 400,
+            transition: 'color 0.15s',
           }}
         >
           {tab.label}
@@ -258,9 +272,9 @@ export function Tabs({ tabs, active, onChange }) {
 }
 
 /* ── ProgressBar ─────────────────────────────────────── */
-export function ProgressBar({ value, color = '#1a4fa0' }) {
+export function ProgressBar({ value, color = '#2563eb' }) {
   return (
-    <div style={{ height: 5, background: '#f1efe8', borderRadius: 3, overflow: 'hidden', marginTop: 4 }}>
+    <div style={{ height: 5, background: '#e5e7eb', borderRadius: 3, overflow: 'hidden', marginTop: 4 }}>
       <div style={{ height: '100%', width: `${value}%`, background: color, borderRadius: 3 }} />
     </div>
   );
