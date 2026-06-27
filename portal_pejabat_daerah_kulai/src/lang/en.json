@@ -185,5 +185,26 @@
   "edit_category": "Edit Category",
   "confirm_delete": "Confirm Delete",
   "delete_category_warning": "Are you sure you want to delete this category? This action cannot be undone.",
-  "saving": "Saving..."
+  "saving": "Saving...",
+
+  "featured-features": "Featured Features",
+  "everything-you-need": "Everything you need in one platform",
+  "nonstop-service": "Nonstop Service",
+  "fast-response": "Fast Response",
+  "active-users": "Active Users",
+  "user-satisfaction": "User Satisfaction",
+  "how-system-works": "How the System Works",
+  "home-step-register-description": "Create account with your email",
+  "ask": "Ask",
+  "home-step-ask-description": "Use chatbot or search FAQ",
+  "home-step-submit-description": "Create or track complaints",
+  "done": "Done",
+  "home-step-done-description": "Receive maximum support",
+  "home-cta-title": "Ready to Get Started?",
+  "home-cta-description": "Join thousands of users who already enjoy the convenience of our service",
+  "register-now": "Register Now",
+  "official-portal": "Official Portal",
+  "official-portal-subtitle": "Serving wholeheartedly for your convenience",
+  "contact-us": "Contact",
+  "contact-hours": "Monday - Friday, 08:00 - 17:00"
 }
