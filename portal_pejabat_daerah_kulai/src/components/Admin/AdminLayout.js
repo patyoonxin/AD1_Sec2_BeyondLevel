@@ -50,6 +50,14 @@ function NavIcon({ name }) {
         <circle cx="10.5" cy="8" r="1" fill="currentColor" />
       </svg>
     ),
+    categories: (
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+        <rect x="2" y="2" width="5" height="5" rx="1.5" fill="currentColor" />
+        <rect x="9" y="2" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+        <rect x="2" y="9" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+        <rect x="9" y="9" width="5" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+      </svg>
+    ),
     users: (
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
         <circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.3" />
