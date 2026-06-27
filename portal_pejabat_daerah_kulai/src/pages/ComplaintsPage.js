@@ -1,7 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { complaintAPI, categoryAPI } from "../services/api";
 import { useTranslation } from "../lang/i18n";
-import { ArrowUpTrayIcon } from "@heroicons/react/24/solid";
+import {
+  ArrowUpTrayIcon,
+  TagIcon,
+  MapPinIcon,
+  CalendarIcon,
+  BellIcon,
+  DocumentTextIcon,
+  CogIcon,
+  CheckCircleIcon,
+} from "@heroicons/react/24/outline";
 
 function ComplaintsPage() {
   const { t } = useTranslation();
@@ -349,7 +358,7 @@ function ComplaintsPage() {
                     <div className="flex gap-4">
                       <div className="flex flex-col items-center">
                         <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                          📝
+                          <DocumentTextIcon className="w-5 h-5" />
                         </div>
                       </div>
                       <div className="text-sm">
@@ -371,8 +380,8 @@ function ComplaintsPage() {
                             className={`w-10 h-10 rounded-full flex items-center justify-center ${selectedComplaint.status === "in_progress" ? "bg-yellow-100 text-yellow-600" : "bg-green-100 text-green-600"}`}
                           >
                             {selectedComplaint.status === "in_progress"
-                              ? "⚙️"
-                              : "✅"}
+                              ? <CogIcon className="w-5 h-5" />
+                              : <CheckCircleIcon className="w-5 h-5" />}
                           </div>
                         </div>
                         <div className="text-sm">
@@ -830,16 +839,23 @@ function ComplaintsPage() {
                     </div>
 
                     <div className="flex flex-wrap gap-4 text-sm text-gray-600 pt-3 border-t border-gray-100">
-                      <span>🏷️ {complaint.category}</span>
-                      <span>📍 {complaint.location}</span>
-                      <span>
-                        📅{" "}
+                      <span className="inline-flex items-center gap-1.5">
+                        <TagIcon className="w-4 h-4 text-gray-500" />
+                        {complaint.category}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <MapPinIcon className="w-4 h-4 text-gray-500" />
+                        {complaint.location}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <CalendarIcon className="w-4 h-4 text-gray-500" />
                         {new Date(complaint.created_at).toLocaleDateString(
-                          "en-US",
+                          "en-GB",
                         )}
                       </span>
-                      <span>
-                        🔔 {t("record_id", "Record ID")}:{" "}
+                      <span className="inline-flex items-center gap-1.5">
+                        <BellIcon className="w-4 h-4 text-gray-500" />
+                        {t("record_id", "Record ID")}:{" "}
                         {complaint.record_id || complaint.id}
                       </span>
                     </div>
