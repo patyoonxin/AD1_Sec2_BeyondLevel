@@ -114,11 +114,11 @@ function AdminRealAgent() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-[calc(100vh-105px)] bg-gray-100">
       {/* SIDEBAR */}
       <div className="w-80 bg-white border-r flex flex-col">
         <div className="p-5 border-b">
-          <h1 className="text-2xl font-bold">💬 Support Chats</h1>
+          <h1 className="text-2xl font-bold">Support Chats</h1>
           <p className="text-sm text-gray-500">Admin dashboard</p>
         </div>
 
