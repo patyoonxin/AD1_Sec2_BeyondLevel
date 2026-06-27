@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { DevicePhoneMobileIcon } from "@heroicons/react/24/solid";
 
 function VerifyOtp() {
   const [otp, setOtp] = useState('');
@@ -38,8 +39,8 @@ function VerifyOtp() {
       <div className="w-full max-w-md">
 
         {/* Header */}
-        <div className="text-center mb-8 slide-in-left">
-          <div className="text-4xl mb-4">📱</div>
+        <div className="flex flex-col items-center text-center mb-8 slide-in-left pt-6">
+          <div className="text-4xl mb-4"><DevicePhoneMobileIcon className="h-12 w-12 text-black" /></div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Verify OTP</h1>
           <p className="text-gray-600">Enter the OTP sent to your phone</p>
         </div>
