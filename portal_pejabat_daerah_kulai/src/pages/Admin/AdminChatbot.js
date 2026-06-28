@@ -389,7 +389,7 @@ function AdminChatbot() {
         <MetricCard
           label="Pending sessions"
           value={loading ? "…" : stats.pending}
-          sub={stats.pending > 0 ? "Perlu perhatian" : "Semua diproses"}
+          sub={stats.pending > 0 ? "Need attention" : "All processed"}
           subColor={stats.pending > 0 ? "down" : "up"}
         />
       </div>
@@ -416,7 +416,7 @@ function AdminChatbot() {
                 fontSize: 12,
               }}
             >
-              Memuatkan...
+              Loading...
             </div>
           ) : questions.length === 0 ? (
             <div
@@ -441,7 +441,7 @@ function AdminChatbot() {
             >
               <thead>
                 <tr>
-                  {["Mesej", "Kekerapan", "%"].map((h) => (
+                  {["Message", "Frequency", "%"].map((h) => (
                     <th
                       key={h}
                       style={{
@@ -556,7 +556,7 @@ function AdminChatbot() {
                                     color: "#333",
                                   }}
                                 >
-                                  💬 {msg}
+                                  {msg}
                                 </div>
                               ))}
                             </div>
@@ -583,7 +583,7 @@ function AdminChatbot() {
                 fontSize: 12,
               }}
             >
-              Memuatkan...
+              Loading...
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={180}>
@@ -628,15 +628,16 @@ function AdminChatbot() {
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               {interpError && (
                 <span style={{ fontSize: 11, color: "#a32d2d" }}>
-                  ⚠ {interpError}
+                  {interpError}
                 </span>
               )}
               <Btn
+                primary
                 small
                 onClick={fetchInterpret}
                 style={{ opacity: interpLoading ? 0.6 : 1 }}
               >
-                {interpLoading ? "⏳ Loading..." : "↺ Refresh"}
+                {interpLoading ? "Loading..." : "Refresh"}
               </Btn>
             </div>
           }
@@ -797,7 +798,7 @@ function AdminChatbot() {
                 onClick={fetchCategorize}
                 style={{ opacity: catLoading ? 0.6 : 1 }}
               >
-                {catLoading ? "⏳ Running..." : "⚡ Run Categorization"}
+                {catLoading ? "Running..." : "Run Categorization"}
               </Btn>
             </div>
           }
@@ -924,16 +925,17 @@ function AdminChatbot() {
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               {faqGenError && (
                 <span style={{ fontSize: 11, color: "#a32d2d" }}>
-                  ⚠ {faqGenError}
+                  {faqGenError}
                 </span>
               )}
               {faqGenResult && (
                 <Btn
+                  primary
                   small
                   onClick={fetchGenerateFaq}
                   style={{ opacity: faqGenLoading ? 0.6 : 1 }}
                 >
-                  🔄 Regenerate
+                  Regenerate
                 </Btn>
               )}
               <Btn
@@ -942,13 +944,10 @@ function AdminChatbot() {
                 onClick={fetchGenerateFaq}
                 style={{
                   opacity: faqGenLoading ? 0.6 : 1,
-                  background: "#1a4fa0",
                   display: faqGenResult ? "none" : undefined,
                 }}
               >
-                {faqGenLoading
-                  ? "⏳ Generating..."
-                  : "🤖 Generate FAQ Suggestions"}
+                {faqGenLoading ? "Generating..." : "Generate FAQ Suggestions"}
               </Btn>
             </div>
           }
@@ -992,11 +991,11 @@ function AdminChatbot() {
               background: "#f0f7e6",
               borderRadius: 8,
               fontSize: 12,
-              color: "#639922",
+              color: "#2563eb",
               fontWeight: 600,
             }}
           >
-            ✅ {faqSaveResult}
+            {faqSaveResult}
           </div>
         )}
 
@@ -1010,10 +1009,10 @@ function AdminChatbot() {
                 background: "#f0f5ff",
                 borderRadius: 8,
                 fontSize: 12,
-                color: "#1a4fa0",
+                color: "#2563eb",
               }}
             >
-              💡 {faqGenResult.message} — Tick the ones you want to save, then
+              {faqGenResult.message} — Tick the ones you want to save, then
               click <strong>"Save Selected"</strong>.
             </div>
 
@@ -1182,7 +1181,7 @@ function AdminChatbot() {
                     fontSize: 11,
                     color: faqSaveResult.startsWith("Error")
                       ? "#a32d2d"
-                      : "#639922",
+                      : "#2563eb",
                   }}
                 >
                   {faqSaveResult}
@@ -1194,13 +1193,13 @@ function AdminChatbot() {
                 onClick={saveSelectedFaq}
                 style={{
                   opacity: faqSaveLoading || faqSelected.length === 0 ? 0.5 : 1,
-                  background: "#639922",
+                  background: "#2563eb",
                   pointerEvents: faqSelected.length === 0 ? "none" : undefined,
                 }}
               >
                 {faqSaveLoading
-                  ? "⏳ Saving..."
-                  : `💾 Save Selected (${faqSelected.length})`}
+                  ? "Saving..."
+                  : `Save Selected (${faqSelected.length})`}
               </Btn>
             </div>
           </div>

@@ -41,7 +41,7 @@ const REPORT_CARDS = [
   },
   {
     id: "full",
-    icon: "📊",
+    icon: "",
     title: "Full Report",
     desc: "Compile both reports into one download",
     bg: "#eeedfe",
@@ -115,7 +115,7 @@ function downloadPDFViaprint(reportTitle, tableHtml) {
     </style>
     </head><body>
     <h2>${reportTitle}</h2>
-    <p class="meta">Dijana pada: ${nowLabel()} · Portal Pejabat Daerah Kulai</p>
+    <p class="meta">Generated on: ${nowLabel()} · Portal Pejabat Daerah Kulai</p>
     ${tableHtml}
     </body></html>
   `);
@@ -230,7 +230,7 @@ function ReportPreviewModal({
                 marginBottom: 8,
               }}
             >
-              Monthly Summary — Aduan
+              Monthly Summary — Complaints
             </div>
             <div
               style={{
@@ -241,7 +241,7 @@ function ReportPreviewModal({
               }}
             >
               {[
-                { label: "Jumlah Aduan", value: compTotal, color: "#1a4fa0" },
+                { label: "Total Complaints", value: compTotal, color: "#1a4fa0" },
                 { label: "Resolved", value: compResolved, color: "#639922" },
                 {
                   label: "In Progress",
@@ -299,10 +299,10 @@ function ReportPreviewModal({
           }}
         >
           {[
-            { label: "Jumlah Perbualan", value: total, color: "#1a4fa0" },
-            { label: "Jumlah Mesej", value: msgs, color: "#534ab7" },
-            { label: "Sesi Aktif", value: open_, color: "#639922" },
-            { label: "Sesi Ditutup", value: closed, color: "#888780" },
+            { label: "Total Chats", value: total, color: "#1a4fa0" },
+            { label: "Total Messages", value: msgs, color: "#534ab7" },
+            { label: "Active Sessions", value: open_, color: "#639922" },
+            { label: "Closed Sessions", value: closed, color: "#888780" },
           ].map((s) => (
             <div
               key={s.label}
@@ -332,7 +332,7 @@ function ReportPreviewModal({
                 marginBottom: 10,
               }}
             >
-              Soalan lazim pengguna
+              Common User Questions
             </div>
             <div
               style={{
@@ -493,8 +493,8 @@ function ReportPreviewModal({
           <Btn
             onClick={() => {
               const cols = [
-                { key: "topic", label: "Kategori" },
-                { key: "count", label: "Kekerapan" },
+                { key: "topic", label: "Topic" },
+                { key: "count", label: "Frequency" },
                 { key: "pct", label: "%" },
               ];
               const header = cols.map((c) => '"' + c.label + '"').join(",");
@@ -550,8 +550,8 @@ function ReportPreviewModal({
                     .join("")
                 : "";
               const compSection = isFull
-                ? "<h3>Monthly Summary — Aduan</h3>" +
-                  "<table><thead><tr><th>No. Rekod</th><th>Tajuk</th><th>Kategori</th><th>Status</th></tr></thead>" +
+                ? "<h3>Monthly Summary — Complaints</h3>" +
+                  "<table><thead><tr><th>No. Record</th><th>Title</th><th>Category</th><th>Status</th></tr></thead>" +
                   "<tbody>" +
                   compRows +
                   "</tbody></table><br/>"
@@ -575,7 +575,7 @@ function ReportPreviewModal({
                 "<h2>" +
                 (isFull ? "Full Report" : "Chatbot Analytics Report") +
                 "</h2>" +
-                '<p class="meta">Dijana pada: ' +
+                '<p class="meta">Generated on: ' +
                 new Date().toLocaleString("ms-MY") +
                 " &middot; Portal Pejabat Daerah Kulai</p>" +
                 compSection +
@@ -583,19 +583,19 @@ function ReportPreviewModal({
                 '<div class="stats">' +
                 '<div class="stat"><div class="stat-val">' +
                 total +
-                '</div><div class="stat-lbl">Jumlah Perbualan</div></div>' +
+                '</div><div class="stat-lbl">Total Chats</div></div>' +
                 '<div class="stat"><div class="stat-val">' +
                 msgs +
-                '</div><div class="stat-lbl">Jumlah Mesej</div></div>' +
+                '</div><div class="stat-lbl">Total Messages</div></div>' +
                 '<div class="stat"><div class="stat-val">' +
                 open_ +
-                '</div><div class="stat-lbl">Sesi Aktif</div></div>' +
+                '</div><div class="stat-lbl">Active Sessions</div></div>' +
                 '<div class="stat"><div class="stat-val">' +
                 closed +
-                '</div><div class="stat-lbl">Sesi Ditutup</div></div>' +
+                '</div><div class="stat-lbl">Closed Sessions</div></div>' +
                 "</div>" +
-                "<h3>Soalan lazim pengguna</h3>" +
-                "<table><thead><tr><th>Kategori</th><th>Kekerapan</th><th>%</th><th>Contoh queries</th></tr></thead>" +
+                "<h3>Common User Questions</h3>" +
+                "<table><thead><tr><th>Topic</th><th>Frequency</th><th>%</th><th>Example Queries</th></tr></thead>" +
                 "<tbody>" +
                 tableRows +
                 "</tbody></table>" +
@@ -620,11 +620,11 @@ function ReportPreviewModal({
   });
 
   const cols = [
-    { key: "record_id", label: "No. Rekod" },
-    { key: "title", label: "Tajuk" },
-    { key: "category", label: "Kategori" },
+    { key: "record_id", label: "No. Record" },
+    { key: "title", label: "Title" },
+    { key: "category", label: "Category" },
     { key: "status", label: "Status" },
-    { key: "created_at", label: "Tarikh" },
+    { key: "created_at", label: "Date" },
   ];
 
   const rows = complaints.slice(0, 30).map((c) => ({
@@ -684,7 +684,7 @@ function ReportPreviewModal({
           <div style={{ fontSize: 20, fontWeight: 700, color: "#1a4fa0" }}>
             {total}
           </div>
-          <div style={{ fontSize: 10, color: "#888780" }}>Jumlah</div>
+          <div style={{ fontSize: 10, color: "#888780" }}>Total</div>
         </div>
         {["Pending", "In Progress", "Resolved"].map((s) => (
           <div
@@ -813,7 +813,7 @@ function GenerateModal({ open, onClose, complaints, onGenerated }) {
       await new Promise((r) => setTimeout(r, 800));
       onGenerated(selected);
     } catch {
-      setError("Penjanaan laporan gagal. Sila cuba lagi.");
+      setError("Generation failed. Please try again.");
     } finally {
       setGenerating(false);
     }
@@ -830,7 +830,7 @@ function GenerateModal({ open, onClose, complaints, onGenerated }) {
         }}
       >
         <div style={{ fontSize: 15, fontWeight: 700, color: "#1a1a1a" }}>
-          Jana Laporan Baharu
+          Generate New Report
         </div>
         <button
           onClick={onClose}
@@ -846,7 +846,7 @@ function GenerateModal({ open, onClose, complaints, onGenerated }) {
         </button>
       </div>
       <div style={{ fontSize: 12, color: "#555", marginBottom: 14 }}>
-        Pilih jenis laporan yang ingin dijana:
+        Select the type of report you want to generate:
       </div>
       <div
         style={{
@@ -920,7 +920,7 @@ function GenerateModal({ open, onClose, complaints, onGenerated }) {
           onClick={handleGenerate}
           style={{ opacity: !selected || generating ? 0.6 : 1 }}
         >
-          {generating ? "⏳ Menjana..." : "✦ Jana Laporan"}
+          {generating ? "Generating..." : "Generate Report"}
         </Btn>
       </div>
     </Modal>
@@ -940,7 +940,7 @@ function ExportFormatModal({ open, report, complaints, onClose, onConfirm }) {
           marginBottom: 16,
         }}
       >
-        <div style={{ fontSize: 15, fontWeight: 700 }}>Export Laporan</div>
+        <div style={{ fontSize: 15, fontWeight: 700 }}>Export Report</div>
         <button
           onClick={onClose}
           style={{
@@ -955,16 +955,16 @@ function ExportFormatModal({ open, report, complaints, onClose, onConfirm }) {
         </button>
       </div>
       <div style={{ fontSize: 12, color: "#555", marginBottom: 14 }}>
-        Pilih format untuk export <strong>{report?.title}</strong>:
+        Select format for exporting <strong>{report?.title}</strong>:
       </div>
       <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
         {[
           {
             val: "csv",
-            label: "📊 Excel (CSV)",
-            desc: "Sesuai untuk analisis data",
+            label: "Excel (CSV)",
+            desc: "Suitable for data analysis",
           },
-          { val: "pdf", label: "🖨 PDF", desc: "Sesuai untuk cetakan" },
+          { val: "pdf", label: "PDF", desc: "Suitable for printing" },
         ].map((f) => (
           <div
             key={f.val}
@@ -993,9 +993,9 @@ function ExportFormatModal({ open, report, complaints, onClose, onConfirm }) {
         ))}
       </div>
       <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-        <Btn onClick={onClose}>Batal</Btn>
+        <Btn onClick={onClose}>Cancel</Btn>
         <Btn primary onClick={() => onConfirm(format)}>
-          ⬇ Export
+          Export
         </Btn>
       </div>
     </Modal>
@@ -1036,7 +1036,7 @@ function AdminAnalytics() {
         { headers: { Accept: "application/json" } },
       );
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.message || "Gagal memuat data");
+      if (!res.ok) throw new Error(data?.message || "Failed to load data");
       // analytics endpoint returns { rows: [...], summary: {...} }
       setComplaints(data.rows || []);
       if (data.monthly_breakdown) setMonthlyBreakdown(data.monthly_breakdown);
@@ -1048,11 +1048,11 @@ function AdminAnalytics() {
           { headers: { Accept: "application/json" } },
         );
         const data2 = await res2.json();
-        if (!res2.ok) throw new Error(data2?.message || "Gagal memuat data");
+        if (!res2.ok) throw new Error(data2?.message || "Failed to load data");
         const rows = Array.isArray(data2) ? data2 : data2.data || [];
         setComplaints(rows);
       } catch {
-        setFetchError("Tidak dapat memuatkan data. Semak sambungan ke server.");
+        setFetchError("Failed to load data. Please check your internet connection.");
       }
     } finally {
       setLoading(false);
@@ -1188,11 +1188,11 @@ function AdminAnalytics() {
         if (format === "csv") {
           // Section 1: complaints
           const compCols = [
-            { key: "record_id", label: "No. Rekod" },
-            { key: "title", label: "Tajuk" },
-            { key: "category", label: "Kategori" },
+            { key: "record_id", label: "No. of Records" },
+            { key: "title", label: "Title" },
+            { key: "category", label: "Category" },
             { key: "status", label: "Status" },
-            { key: "created_at", label: "Tarikh" },
+            { key: "created_at", label: "Date" },
           ];
           const compCsv = buildCSV(
             data.map((c) => ({ ...c, created_at: formatDate(c.created_at) })),
@@ -1201,8 +1201,8 @@ function AdminAnalytics() {
 
           // Section 2: chatbot
           const chatCols = [
-            { key: "topic", label: "Kategori" },
-            { key: "count", label: "Kekerapan" },
+            { key: "topic", label: "Category" },
+            { key: "count", label: "Frequency" },
             { key: "pct", label: "%" },
           ];
           const chatHeader = chatCols.map((c) => '"' + c.label + '"').join(",");
@@ -1241,11 +1241,11 @@ function AdminAnalytics() {
             .map(
               (q) =>
                 "<tr><td>" +
-                q.topic +
+                (q.topic || "") +
                 "</td><td>" +
-                q.count +
+                (q.count || "") +
                 "</td><td>" +
-                q.pct +
+                (q.pct || "") +
                 "</td><td>" +
                 (q.messages || []).slice(0, 3).join(", ") +
                 "</td></tr>",
@@ -1254,12 +1254,12 @@ function AdminAnalytics() {
 
           const tableHtml =
             "<h3>Monthly Summary — Aduan</h3>" +
-            "<table><thead><tr><th>No. Rekod</th><th>Tajuk</th><th>Kategori</th><th>Status</th><th>Tarikh</th></tr></thead>" +
+            "<table><thead><tr><th>No. of Records</th><th>Title</th><th>Category</th><th>Status</th><th>Date</th></tr></thead>" +
             "<tbody>" +
             compRows +
             "</tbody></table>" +
             "<br/><h3>Chatbot Analytics</h3>" +
-            "<table><thead><tr><th>Kategori</th><th>Kekerapan</th><th>%</th><th>Contoh Queries</th></tr></thead>" +
+            "<table><thead><tr><th>Category</th><th>Frequency</th><th>%</th><th>Example Queries</th></tr></thead>" +
             "<tbody>" +
             chatRows +
             "</tbody></table>";
@@ -1308,7 +1308,7 @@ function AdminAnalytics() {
       setReportPreviewOpen(false);
       setExportOpen(false);
     } catch {
-      setExportError("Export gagal. Sila cuba lagi.");
+      setExportError("Export failed. Please try again.");
     }
   };
 
@@ -1319,11 +1319,11 @@ function AdminAnalytics() {
   const handleExportFormatConfirm = (format) => {
     if (!exportReport) return;
     const cols = [
-      { key: "record_id", label: "No. Rekod" },
-      { key: "title", label: "Tajuk" },
-      { key: "category", label: "Kategori" },
+      { key: "record_id", label: "No. of Records" },
+      { key: "title", label: "Title" },
+      { key: "category", label: "Category" },
       { key: "status", label: "Status" },
-      { key: "created_at", label: "Tarikh" },
+      { key: "created_at", label: "Date" },
     ];
     doExport(format, exportReport, complaints, cols);
   };
@@ -1529,7 +1529,7 @@ function AdminAnalytics() {
                 fontSize: 12,
               }}
             >
-              Memuatkan...
+              Loading...
             </div>
           ) : trendByMonth.every((d) => d.received === 0) ? (
             <div
@@ -1605,7 +1605,7 @@ function AdminAnalytics() {
                 fontSize: 12,
               }}
             >
-              Memuatkan...
+              Loading...
             </div>
           ) : byCategory.length === 0 ? (
             <div
@@ -1684,7 +1684,7 @@ function AdminAnalytics() {
                 fontSize: 12,
               }}
             >
-              Memuatkan...
+              Loading...
             </div>
           ) : byStatus.length === 0 ? (
             <div
@@ -1741,7 +1741,7 @@ function AdminAnalytics() {
                 fontSize: 12,
               }}
             >
-              Memuatkan...
+              Loading...
             </div>
           ) : resolutionByCategory.length === 0 ? (
             <div
