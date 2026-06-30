@@ -303,7 +303,7 @@ function FAQPage() {
               href="mailto:support@kulai.gov.my"
               className="btn btn-primary inline-block"
             >
-              <EnvelopeIcon className="h-5 w-5 mr-2" />
+              
               Contact Support
             </a>
           </div>
